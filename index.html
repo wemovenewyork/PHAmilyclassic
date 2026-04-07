@@ -151,7 +151,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto;align-items:center;}
 .about-image{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/3;background:var(--navy);}
 .about-image-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:transparent;padding:40px;}
-.about-image-inner img{width:80%;max-width:320px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.4));mix-blend-mode:lighten;}
+.about-image-inner img{width:80%;max-width:320px;}
 .about-accent{position:absolute;bottom:-4px;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--red),var(--gold),var(--bright-blue));}
 .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;}
 .stat{text-align:center;padding:20px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.02);}
@@ -843,13 +843,13 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   </div>
   <div class="footer-bottom">
     <p class="footer-copy">&copy; 2026 Adelphic Union Lodge #14, F. & A.M. All Rights Reserved.</p>
-    <p class="footer-copy">Interstate PHAmily Classic | <a href="#" style="color:var(--gray);">Privacy Policy</a> | <a href="#" style="color:var(--gray);">Terms of Service</a></p>
+    <p class="footer-copy">Interstate PHAmily Classic | <a href="privacy.html" style="color:var(--gray);">Privacy Policy</a> | <a href="terms.html" style="color:var(--gray);">Terms &amp; Conditions</a></p>
   </div>
 </footer>
 
 <!-- COOKIE CONSENT -->
 <div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent">
-  <p class="cookie-text">We use cookies to enhance your experience and analyze site traffic. By continuing to use this site, you agree to our <a href="#">Privacy Policy</a>.</p>
+  <p class="cookie-text">We use cookies to enhance your experience and analyze site traffic. By continuing to use this site, you agree to our <a href="privacy.html">Privacy Policy</a>.</p>
   <div class="cookie-btns">
     <button class="cookie-btn cookie-accept" onclick="acceptCookies()">Accept</button>
     <button class="cookie-btn cookie-decline" onclick="declineCookies()">Decline</button>
@@ -947,10 +947,8 @@ const observer=new IntersectionObserver((entries)=>{
 },{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
-// Remove black background from logo using canvas pixel processing
+// Remove black background from logos using canvas pixel processing
 (function(){
-  var logo=document.querySelector('.hero-logo');
-  if(!logo)return;
   function stripBlack(img){
     var c=document.createElement('canvas');
     var ctx=c.getContext('2d');
@@ -959,16 +957,18 @@ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
     var d=ctx.getImageData(0,0,c.width,c.height);
     var px=d.data;
     for(var i=0;i<px.length;i+=4){
-      var r=px[i],g=px[i+1],b=px[i+2];
-      var brightness=Math.max(r,g,b);
+      var brightness=Math.max(px[i],px[i+1],px[i+2]);
       if(brightness<50){px[i+3]=Math.round((brightness/50)*255);}
     }
     ctx.putImageData(d,0,0);
     img.src=c.toDataURL('image/png');
     img.style.mixBlendMode='normal';
   }
-  if(logo.complete&&logo.naturalWidth>0){stripBlack(logo);}
-  else{logo.addEventListener('load',function(){stripBlack(logo);});}
+  function processImg(img){
+    if(img.complete&&img.naturalWidth>0){stripBlack(img);}
+    else{img.addEventListener('load',function(){stripBlack(img);});}
+  }
+  document.querySelectorAll('.hero-logo,.about-image-inner img').forEach(processImg);
 })();
 </script>
 </body>
