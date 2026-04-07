@@ -114,7 +114,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
   background-size:60px 60px;opacity:.5;}
 .hero-content{position:relative;z-index:2;max-width:900px;}
-.hero-logo{width:280px;height:auto;margin-bottom:24px;animation:floatIn 1.2s ease-out;mix-blend-mode:screen;}
+.hero-logo{width:280px;height:auto;margin-bottom:24px;animation:floatIn 1.2s ease-out;}
 .hero-presented{font-family:'Barlow Condensed',sans-serif;font-weight:400;font-size:1rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;opacity:0;animation:fadeUp .8s ease-out .3s forwards;}
 .hero-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(2.8rem,7vw,5.5rem);line-height:1;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;opacity:0;animation:fadeUp .8s ease-out .5s forwards;}
 .hero-title .gold{color:var(--gold);}
@@ -946,6 +946,30 @@ const observer=new IntersectionObserver((entries)=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target);}});
 },{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// Remove black background from logo using canvas pixel processing
+(function(){
+  var logo=document.querySelector('.hero-logo');
+  if(!logo)return;
+  function stripBlack(img){
+    var c=document.createElement('canvas');
+    var ctx=c.getContext('2d');
+    c.width=img.naturalWidth;c.height=img.naturalHeight;
+    ctx.drawImage(img,0,0);
+    var d=ctx.getImageData(0,0,c.width,c.height);
+    var px=d.data;
+    for(var i=0;i<px.length;i+=4){
+      var r=px[i],g=px[i+1],b=px[i+2];
+      var brightness=Math.max(r,g,b);
+      if(brightness<50){px[i+3]=Math.round((brightness/50)*255);}
+    }
+    ctx.putImageData(d,0,0);
+    img.src=c.toDataURL('image/png');
+    img.style.mixBlendMode='normal';
+  }
+  if(logo.complete&&logo.naturalWidth>0){stripBlack(logo);}
+  else{logo.addEventListener('load',function(){stripBlack(logo);});}
+})();
 </script>
 </body>
 </html>
