@@ -94,8 +94,9 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .nav-links{display:flex;gap:28px;align-items:center;}
 .nav-links a{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.9rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--light-gray);transition:color .3s;}
 .nav-links a:hover{color:var(--gold);}
-.nav-cta{background:var(--red);color:var(--white)!important;padding:10px 24px;border-radius:4px;font-weight:600!important;transition:background .3s,transform .2s;}
+.nav-cta{background:var(--red);color:var(--white)!important;padding:10px 24px;border-radius:4px;font-weight:600!important;transition:background .3s,transform .2s;animation:pulse-cta 2s ease-in-out infinite;}
 .nav-cta:hover{background:var(--dark-red);transform:translateY(-1px);}
+@keyframes pulse-cta{0%,100%{box-shadow:0 0 0 0 rgba(196,30,42,.6);}50%{box-shadow:0 0 0 8px rgba(196,30,42,0);}}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;z-index:1001;background:none;border:none;padding:8px;}
 .hamburger span{width:26px;height:2px;background:var(--white);transition:all .3s;display:block;}
 .mobile-menu{display:none;position:fixed;top:0;left:0;width:100%;height:100vh;background:rgba(10,22,40,.98);z-index:999;flex-direction:column;align-items:center;justify-content:center;gap:24px;}
@@ -130,6 +131,8 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 
 .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--red);color:var(--white);padding:16px 40px;font-family:'Oswald',sans-serif;font-weight:600;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:4px;cursor:pointer;transition:all .3s;}
 .btn-primary:hover{background:var(--dark-red);transform:translateY(-2px);box-shadow:0 8px 30px rgba(196,30,42,.4);}
+.btn-primary.pulse{animation:pulse-cta 2s ease-in-out infinite;}
+@media(prefers-reduced-motion:reduce){.btn-primary.pulse,.nav-cta{animation:none;}}
 .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--white);padding:16px 40px;font-family:'Oswald',sans-serif;font-weight:600;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;border:2px solid rgba(255,255,255,.25);border-radius:4px;cursor:pointer;transition:all .3s;}
 .btn-secondary:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px);}
 
@@ -419,7 +422,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
     <a href="#sponsors">Sponsors</a>
     <a href="#faq">FAQ</a>
     <a href="#contact">Contact</a>
-    <a href="#tickets" class="nav-cta">Get Tickets</a>
+    <a href="https://whencecameyouniversity.com/collections/all" target="_blank" rel="noopener" class="nav-cta">Get Tickets</a>
   </div>
   <button class="hamburger" onclick="toggleMenu()" aria-label="Toggle navigation menu" aria-expanded="false">
     <span></span><span></span><span></span>
@@ -469,7 +472,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
       <div class="countdown-unit"><span class="countdown-num" id="cd-sec">--</span><span class="countdown-label">Sec</span></div>
     </div>
     <div class="hero-actions">
-      <a href="#tickets" class="btn-primary">
+      <a href="https://whencecameyouniversity.com/collections/all" target="_blank" rel="noopener" class="btn-primary pulse">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 002 2 2 2 0 010 4 2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2 2 2 0 010-4 2 2 0 002-2V7a2 2 0 00-2-2H5z"/></svg>
         Get Tickets — $20
       </a>
@@ -668,7 +671,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
       <div class="tickets-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Health & Wellness Pavilion</div>
       <div class="tickets-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Vendor Marketplace</div>
     </div>
-    <a href="#" class="btn-primary" style="font-size:1.2rem;padding:18px 56px;">
+    <a href="https://whencecameyouniversity.com/collections/all" target="_blank" rel="noopener" class="btn-primary pulse" style="font-size:1.2rem;padding:18px 56px;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 002 2 2 2 0 010 4 2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 00-2-2 2 2 0 010-4 2 2 0 002-2V7a2 2 0 00-2-2H5z"/></svg>
       Buy Tickets
     </a>
