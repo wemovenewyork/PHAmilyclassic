@@ -1,0 +1,81 @@
+/* Design tokens — kept in sync with public/index.html */
+:root {
+  --navy: #0a1628;
+  --deep-blue: #132244;
+  --royal-blue: #1e3a6e;
+  --bright-blue: #2b5dad;
+  --red: #c41e2a;
+  --dark-red: #8b1520;
+  --gold: #f5c518;
+  --bright-gold: #ffd900;
+  --cream: #f0e8d8;
+  --white: #ffffff;
+  --gray: #94a3b8;
+  --light-gray: #e2e8f0;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-barlow), 'Barlow', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+input,
+textarea,
+button,
+select {
+  font-family: inherit;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Shared typography classes mirroring the static site */
+.display {
+  font-family: var(--font-oswald), 'Oswald', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.label {
+  font-family: var(--font-barlow-condensed), 'Barlow Condensed', sans-serif;
+  font-weight: 500;
+  font-size: 0.85rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
