@@ -115,7 +115,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
   background-size:60px 60px;opacity:.5;}
 .hero-content{position:relative;z-index:2;max-width:900px;}
-.hero-logo{width:280px;height:auto;margin-bottom:24px;animation:floatIn 1.2s ease-out;}
+.hero-logo{width:280px;height:auto;margin-bottom:24px;animation:floatIn 1.2s ease-out;mix-blend-mode:lighten;}
 .hero-presented{font-family:'Barlow Condensed',sans-serif;font-weight:400;font-size:1rem;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;opacity:0;animation:fadeUp .8s ease-out .3s forwards;}
 .hero-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(2.8rem,7vw,5.5rem);line-height:1;text-transform:uppercase;letter-spacing:2px;margin-bottom:12px;opacity:0;animation:fadeUp .8s ease-out .5s forwards;}
 .hero-title .gold{color:var(--gold);}
@@ -154,7 +154,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto;align-items:center;}
 .about-image{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/3;background:var(--navy);}
 .about-image-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:transparent;padding:40px;}
-.about-image-inner img{width:80%;max-width:320px;}
+.about-image-inner img{width:80%;max-width:320px;mix-blend-mode:lighten;}
 .about-accent{position:absolute;bottom:-4px;left:0;width:100%;height:4px;background:linear-gradient(90deg,var(--red),var(--gold),var(--bright-blue));}
 .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;}
 .stat{text-align:center;padding:20px;border:1px solid rgba(255,255,255,.08);border-radius:6px;background:rgba(255,255,255,.02);}
@@ -950,29 +950,6 @@ const observer=new IntersectionObserver((entries)=>{
 },{threshold:0.1});
 document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
 
-// Remove black background from logos using canvas pixel processing
-(function(){
-  function stripBlack(img){
-    var c=document.createElement('canvas');
-    var ctx=c.getContext('2d');
-    c.width=img.naturalWidth;c.height=img.naturalHeight;
-    ctx.drawImage(img,0,0);
-    var d=ctx.getImageData(0,0,c.width,c.height);
-    var px=d.data;
-    for(var i=0;i<px.length;i+=4){
-      var brightness=Math.max(px[i],px[i+1],px[i+2]);
-      if(brightness<50){px[i+3]=Math.round((brightness/50)*255);}
-    }
-    ctx.putImageData(d,0,0);
-    img.src=c.toDataURL('image/png');
-    img.style.mixBlendMode='normal';
-  }
-  function processImg(img){
-    if(img.complete&&img.naturalWidth>0){stripBlack(img);}
-    else{img.addEventListener('load',function(){stripBlack(img);});}
-  }
-  document.querySelectorAll('.hero-logo,.about-image-inner img').forEach(processImg);
-})();
 </script>
 </body>
 </html>
