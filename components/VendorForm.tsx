@@ -324,7 +324,7 @@ export default function VendorForm() {
           textAlign: 'center',
         }}
       >
-        You'll be redirected to Shopify's secure checkout to complete payment.
+        You&apos;ll be redirected to Shopify&apos;s secure checkout to complete payment.
       </p>
     </form>
   );

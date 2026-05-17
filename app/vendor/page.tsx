@@ -159,7 +159,7 @@ export default async function VendorPage() {
                 marginBottom: 20,
               }}
             >
-              What's included
+              What&apos;s included
             </h2>
             <ul
               style={{
