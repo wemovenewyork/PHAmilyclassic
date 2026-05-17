@@ -260,3 +260,111 @@ export async function createCartForRegistration(args: {
     cartId: data.cartCreate.cart.id,
   };
 }
+// ============================================================================
+// Vendor cart creation
+// ============================================================================
+
+interface CreateVendorCartParams {
+  variantId: string;
+  vendorId: string;
+  companyName: string;
+  contactName: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  productDescription: string;
+  website?: string | null;
+}
+
+/**
+ * Create a Shopify checkout cart for a vendor package purchase.
+ *
+ * Mirrors createCartForRegistration() but for the standalone vendor product.
+ * Single variant — no jersey/shorts lookup needed.
+ *
+ * Returns the hosted Shopify checkoutUrl. The vendor row in Supabase stays
+ * in `pending` status until the order webhook fires post-payment.
+ */
+export async function createCartForVendor(
+  params: CreateVendorCartParams
+): Promise<{ checkoutUrl: string; cartId: string }> {
+  const {
+    variantId,
+    vendorId,
+    companyName,
+    contactName,
+    buyerEmail,
+    buyerPhone,
+    productDescription,
+    website,
+  } = params;
+
+  const cartAttributes: Array<{ key: string; value: string }> = [
+    { key: 'vendor_id', value: vendorId },
+    { key: 'company_name', value: companyName },
+    { key: 'contact_name', value: contactName },
+    { key: 'product_description', value: productDescription },
+  ];
+  if (website) {
+    cartAttributes.push({ key: 'website', value: website });
+  }
+
+  const lineAttributes: Array<{ key: string; value: string }> = [
+    { key: 'Company', value: companyName },
+    { key: 'Contact', value: contactName },
+    { key: 'Product / Service', value: productDescription.slice(0, 200) },
+  ];
+
+  const note = `Vendor package — ${companyName} (${contactName})`;
+
+  const mutation = `#graphql
+    mutation CartCreate($input: CartInput!) {
+      cartCreate(input: $input) {
+        cart {
+          id
+          checkoutUrl
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    input: {
+      attributes: cartAttributes,
+      buyerIdentity: {
+        email: buyerEmail,
+        phone: buyerPhone,
+      },
+      lines: [
+        {
+          merchandiseId: variantId,
+          quantity: 1,
+          attributes: lineAttributes,
+        },
+      ],
+      note,
+    },
+  };
+
+  const data = await storefrontFetch<CartCreateResult>(mutation, variables);
+
+  if (data.cartCreate.userErrors.length > 0) {
+    const errors = data.cartCreate.userErrors
+      .map((e) => `${e.field?.join('.') ?? '?'}: ${e.message}`)
+      .join('; ');
+    throw new Error(`Shopify cartCreate userErrors: ${errors}`);
+  }
+
+  if (!data.cartCreate.cart) {
+    throw new Error('Shopify cartCreate returned no cart');
+  }
+
+  return {
+    checkoutUrl: data.cartCreate.cart.checkoutUrl,
+    cartId: data.cartCreate.cart.id,
+  };
+}

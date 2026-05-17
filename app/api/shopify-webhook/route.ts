@@ -9,6 +9,7 @@ import {
   markWebhookProcessed,
   recordWebhookEvent,
 } from '@/lib/db-admin';
+import { confirmVendor } from '@/lib/db-vendors';
 import { SPECTATOR_TICKET, TEAMS, getTeamBySlug } from '@/lib/teams-config';
 
 /**
@@ -127,6 +128,7 @@ function getBuyerEmail(order: ShopifyOrder): string {
 // Team product IDs as a Set for quick lookup
 const TEAM_PRODUCT_IDS = new Set(TEAMS.map((t) => t.shopifyProductId));
 const SPECTATOR_PRODUCT_ID = SPECTATOR_TICKET.shopifyProductId;
+const VENDOR_PRODUCT_ID = '10440053784757';
 
 // ============================================================================
 // POST handler
@@ -209,6 +211,7 @@ export async function POST(req: Request) {
   const buyerEmail = getBuyerEmail(order);
   const registrationId = getNoteAttribute(order, 'registration_id');
   const teamSlug = getNoteAttribute(order, 'team_slug');
+  const vendorId = getNoteAttribute(order, 'vendor_id');
 
   let registrationConfirmed = false;
   let bundledTicketsCreated = 0;
@@ -272,6 +275,36 @@ export async function POST(req: Request) {
       }
     }
     // Spectator ticket product
+    // Vendor package product
+    else if (productId === VENDOR_PRODUCT_ID) {
+      if (vendorId) {
+        const result = await confirmVendor({
+          vendorId,
+          shopifyOrderId: String(order.id),
+          shopifyOrderName: order.name,
+          amountPaidCents: Math.round(
+            parseFloat(order.total_price ?? '0') * 100
+          ),
+        });
+
+        if (!result.ok) {
+          if ('capExceeded' in result) {
+            errors.push(
+              `vendor-cap-exceeded: order ${order.name} — manual refund needed`
+            );
+            // eslint-disable-next-line no-console
+            console.error('[shopify-webhook] VENDOR CAP EXCEEDED', {
+              orderName: order.name,
+              vendorId,
+            });
+          } else {
+            errors.push(`confirm-vendor: ${result.error}`);
+          }
+        }
+      } else {
+        errors.push(`vendor-product-no-vendor-id: line ${line.id}`);
+      }
+    }
     else if (productId === SPECTATOR_PRODUCT_ID) {
       for (let i = 0; i < line.quantity; i++) {
         const ticket = await createTicket({

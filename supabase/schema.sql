@@ -190,3 +190,58 @@ on conflict (slug) do update set
 --   select slug, name, age_group, max_roster from public.teams order by display_order;
 --   select * from public.team_roster_counts order by team_slug;
 --   select count(*) as total_registrations from public.registrations;
+
+-- ============================================================================
+-- VENDORS — Small Business & Community Partner Packages
+-- ============================================================================
+
+create table if not exists public.vendors (
+  id                  uuid primary key default gen_random_uuid(),
+  company_name        text not null,
+  contact_name        text not null,
+  email               text not null,
+  phone               text not null,
+  product_description text not null,
+  website             text,
+  payment_status      text not null default 'pending'
+                      check (payment_status in ('pending','confirmed','refunded','cancelled','expired','failed')),
+  shopify_order_id    text unique,
+  shopify_order_name  text,
+  amount_paid_cents   int,
+  paid_at             timestamptz,
+  notes               text,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
+);
+
+create index if not exists vendors_status_idx on public.vendors (payment_status);
+create index if not exists vendors_created_at_idx on public.vendors (created_at desc);
+
+alter table public.vendors enable row level security;
+
+drop trigger if exists vendors_updated_at on public.vendors;
+create trigger vendors_updated_at
+  before update on public.vendors
+  for each row execute function public.set_updated_at();
+
+create or replace function public.get_vendor_spot_count()
+returns table (
+  confirmed_count  int,
+  total_spots      int,
+  spots_remaining  int,
+  is_full          boolean
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select
+    (count(*) filter (where payment_status = 'confirmed'))::int as confirmed_count,
+    20 as total_spots,
+    (20 - (count(*) filter (where payment_status = 'confirmed'))::int) as spots_remaining,
+    (count(*) filter (where payment_status = 'confirmed') >= 20) as is_full
+  from public.vendors
+$$;
+
+grant execute on function public.get_vendor_spot_count() to anon;
+grant execute on function public.get_vendor_spot_count() to authenticated;
