@@ -73,7 +73,7 @@ phamilyclassic/
 
 ### Before launch (must do for Session 3 code to work end-to-end)
 1. **Run the new migration** in Supabase SQL Editor: `supabase/migrations/002-tickets.sql`
-2. **Add all 6 env vars to your local `.env.local`** (same values as Vercel)
+2. **Populate `.env.local` with all 7 active env vars** (Supabase × 3 + Shopify × 4). All seven are marked **Sensitive** in Vercel — `vercel env pull` returns empty placeholders for their values, so paste the real values manually after pulling. For testing Shopify or Supabase code paths, prefer a Vercel **preview deploy** over `localhost` (real values are decrypted at function runtime, and Shopify webhooks can't easily reach localhost anyway). Note: `SHOPIFY_ADMIN_API_TOKEN` is only required for the donation feature's custom-amount path (custom-app token with `write_draft_orders` scope, generated via the Shopify Dev Dashboard client-credentials grant); fixed-tier donations work without it.
 3. **Publish the 7 Shopify products** from DRAFT → ACTIVE when ready to open registration
 
 ### Production launch checklist (final step before opening the form publicly)
@@ -94,6 +94,7 @@ phamilyclassic/
 | `SHOPIFY_STORE_DOMAIN` | 3 | `whencecameyouniversity.myshopify.com` |
 | `SHOPIFY_STOREFRONT_ACCESS_TOKEN` | 3 | From Headless storefront |
 | `SHOPIFY_WEBHOOK_SECRET` | 3 | From Settings → Notifications |
+| `SHOPIFY_ADMIN_API_TOKEN` | 5 | Custom-app token, `write_draft_orders` scope (Dev Dashboard client-credentials grant). Required only for custom-amount donations. |
 | `ADMIN_PASSWORD` | 4 | For `/admin` access (Session 4) |
 | `RESEND_API_KEY` | 4 | For ticket emails (Session 4) |
 | `RESEND_FROM_EMAIL` | 4 | `info@phafamilyclassic.com` |

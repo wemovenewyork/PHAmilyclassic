@@ -368,3 +368,251 @@ export async function createCartForVendor(
     cartId: data.cartCreate.cart.id,
   };
 }
+// ============================================================================
+// Donation flow — tier (Storefront cartCreate) and custom (Admin draftOrderCreate)
+// ============================================================================
+
+const ADMIN_API_VERSION = process.env.SHOPIFY_ADMIN_API_VERSION ?? '2024-10';
+
+/**
+ * Low-level Admin API caller. Mirrors storefrontFetch() but targets the
+ * Admin API endpoint with the Admin token. Lazy-evaluates the env var so
+ * the entire module doesn't fail to load when the Admin token is missing
+ * — only the custom-donation path needs it.
+ */
+async function adminFetch<T>(
+  query: string,
+  variables?: Record<string, unknown>
+): Promise<T> {
+  const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN;
+  if (!ADMIN_TOKEN) {
+    throw new Error(
+      'Shopify Admin API token missing. Set SHOPIFY_ADMIN_API_TOKEN in Vercel and .env.local.'
+    );
+  }
+  const ADMIN_API_URL = `https://${STORE_DOMAIN}/admin/api/${ADMIN_API_VERSION}/graphql.json`;
+
+  const res = await fetch(ADMIN_API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Shopify-Access-Token': ADMIN_TOKEN,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ query, variables }),
+    // Force no caching — order/draft mutations must always hit Shopify fresh
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(
+      `Shopify Admin API HTTP ${res.status}: ${text.slice(0, 500)}`
+    );
+  }
+
+  const body = (await res.json()) as {
+    data?: T;
+    errors?: Array<{ message: string; path?: string[] }>;
+  };
+
+  if (body.errors && body.errors.length > 0) {
+    throw new Error(
+      `Shopify Admin GraphQL error: ${body.errors
+        .map((e) => e.message)
+        .join('; ')}`
+    );
+  }
+
+  if (!body.data) {
+    throw new Error('Shopify Admin API returned no data');
+  }
+
+  return body.data;
+}
+
+/**
+ * Create a Storefront cart for a fixed-tier donation ($25/$50/$100/$250).
+ * The donor is redirected to the cart's hosted checkoutUrl.
+ *
+ * The `donationId` is attached as a cart attribute. When the orders/paid
+ * webhook fires, the handler reads `order.note_attributes.donation_id` to
+ * find the matching pending row in the Supabase `donations` table and flip
+ * its `payment_status` to 'confirmed'.
+ */
+export async function createCartForDonationTier(args: {
+  variantId: string;
+  amountUsd: number;
+  donationId: string;
+  donorEmail?: string | null;
+  donorFirstName?: string | null;
+}): Promise<{ checkoutUrl: string; cartId: string }> {
+  const { variantId, amountUsd, donationId, donorEmail, donorFirstName } = args;
+
+  const cartAttributes: Array<{ key: string; value: string }> = [
+    { key: 'donation_id', value: donationId },
+    { key: 'donation_type', value: 'tier' },
+    { key: 'donation_tier', value: String(amountUsd) },
+    ...(donorFirstName ? [{ key: 'donor_first_name', value: donorFirstName }] : []),
+  ];
+
+  const note = donorFirstName
+    ? `PHAmily Classic donation — $${amountUsd} tier — ${donorFirstName}`
+    : `PHAmily Classic donation — $${amountUsd} tier`;
+
+  const mutation = `#graphql
+    mutation CartCreate($input: CartInput!) {
+      cartCreate(input: $input) {
+        cart {
+          id
+          checkoutUrl
+        }
+        userErrors {
+          field
+          message
+          code
+        }
+      }
+    }
+  `;
+
+  const input: Record<string, unknown> = {
+    attributes: cartAttributes,
+    lines: [
+      {
+        merchandiseId: variantId,
+        quantity: 1,
+      },
+    ],
+    note,
+  };
+
+  if (donorEmail) {
+    input.buyerIdentity = { email: donorEmail };
+  }
+
+  const data = await storefrontFetch<CartCreateResult>(mutation, { input });
+
+  if (data.cartCreate.userErrors.length > 0) {
+    const errors = data.cartCreate.userErrors
+      .map((e) => `${e.field?.join('.') ?? '?'}: ${e.message}`)
+      .join('; ');
+    throw new Error(`Shopify cartCreate userErrors: ${errors}`);
+  }
+
+  if (!data.cartCreate.cart) {
+    throw new Error('Shopify cartCreate returned no cart');
+  }
+
+  return {
+    checkoutUrl: data.cartCreate.cart.checkoutUrl,
+    cartId: data.cartCreate.cart.id,
+  };
+}
+
+/**
+ * Create a Shopify Admin draft order for a custom-amount donation.
+ * The donor is redirected to the draft order's invoiceUrl, which Shopify
+ * hosts as a payable checkout page.
+ *
+ * Unlike the tier path, this uses the Admin API (not Storefront) so we can
+ * set a one-off line item price without pre-creating a variant.
+ *
+ * The `donationId` is attached as a customAttribute on the draft order. When
+ * the orders/paid webhook fires for the order Shopify produces from this
+ * draft, the handler reads `order.note_attributes.donation_id` to find the
+ * matching pending row in the Supabase `donations` table and flip its
+ * `payment_status` to 'confirmed'. The handler can also fall back to
+ * matching on `shopify_draft_order_id` — db-donations.ts supports either
+ * identifier.
+ *
+ * We deliberately do NOT call draftOrderInvoiceSend — the donor is on the
+ * page expecting to be redirected, not to receive an email. The returned
+ * invoiceUrl IS the hosted checkout URL the route should redirect to.
+ */
+export async function createDraftOrderForCustomDonation(args: {
+  amountUsd: number;
+  donationId: string;
+  donorEmail: string;
+  donorFirstName?: string | null;
+}): Promise<{ draftOrderId: string; invoiceUrl: string }> {
+  const { amountUsd, donationId, donorEmail, donorFirstName } = args;
+
+  // Deferred env-var check — only the custom-amount path needs this token.
+  // Tier donations and the existing team/vendor flows don't.
+  if (!process.env.SHOPIFY_ADMIN_API_TOKEN) {
+    throw new Error(
+      'SHOPIFY_ADMIN_API_TOKEN not configured — custom-amount donations are disabled'
+    );
+  }
+
+  const customAttributes: Array<{ key: string; value: string }> = [
+    { key: 'donation_id', value: donationId },
+    { key: 'donation_type', value: 'custom' },
+    { key: 'donation_amount_usd', value: String(amountUsd) },
+    ...(donorFirstName ? [{ key: 'donor_first_name', value: donorFirstName }] : []),
+  ];
+
+  const note = donorFirstName
+    ? `PHAmily Classic donation — $${amountUsd} custom — ${donorFirstName}`
+    : `PHAmily Classic donation — $${amountUsd} custom`;
+
+  const mutation = `#graphql
+    mutation DraftOrderCreate($input: DraftOrderInput!) {
+      draftOrderCreate(input: $input) {
+        draftOrder {
+          id
+          invoiceUrl
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const variables = {
+    input: {
+      email: donorEmail,
+      note,
+      tags: ['donation', 'custom', 'interstate-phamily-classic'],
+      customAttributes,
+      lineItems: [
+        {
+          title: `Support the PHAmily — $${amountUsd} Donation`,
+          originalUnitPriceWithCurrency: {
+            amount: amountUsd.toFixed(2),
+            currencyCode: 'USD',
+          },
+          quantity: 1,
+          requiresShipping: false,
+          taxable: false,
+        },
+      ],
+    },
+  };
+
+  const data = await adminFetch<{
+    draftOrderCreate: {
+      draftOrder: { id: string; invoiceUrl: string } | null;
+      userErrors: Array<{ field: string[] | null; message: string }>;
+    };
+  }>(mutation, variables);
+
+  if (data.draftOrderCreate.userErrors.length > 0) {
+    const errors = data.draftOrderCreate.userErrors
+      .map((e) => `${e.field?.join('.') ?? '?'}: ${e.message}`)
+      .join('; ');
+    throw new Error(`Shopify draftOrderCreate userErrors: ${errors}`);
+  }
+
+  if (!data.draftOrderCreate.draftOrder) {
+    throw new Error('Shopify draftOrderCreate returned no draftOrder');
+  }
+
+  return {
+    draftOrderId: data.draftOrderCreate.draftOrder.id,
+    invoiceUrl: data.draftOrderCreate.draftOrder.invoiceUrl,
+  };
+}
