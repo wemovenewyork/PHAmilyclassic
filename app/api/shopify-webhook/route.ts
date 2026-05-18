@@ -10,6 +10,7 @@ import {
   recordWebhookEvent,
 } from '@/lib/db-admin';
 import { confirmVendor } from '@/lib/db-vendors';
+import { confirmDonationByShopifyOrder } from '@/lib/db-donations';
 import { SPECTATOR_TICKET, TEAMS, getTeamBySlug } from '@/lib/teams-config';
 
 /**
@@ -99,6 +100,11 @@ interface ShopifyOrder {
     last_name?: string;
     email?: string;
   };
+  // Set when the order was created from an Admin draft order (custom-amount
+  // donation path). source_name === 'draft_order' and source_identifier
+  // holds the draft order's numeric id (NOT the GID — webhooks use REST format).
+  source_name?: string;
+  source_identifier?: string | null;
 }
 
 function getNoteAttribute(
@@ -216,6 +222,7 @@ export async function POST(req: Request) {
   let registrationConfirmed = false;
   let bundledTicketsCreated = 0;
   let paidTicketsCreated = 0;
+  let donationConfirmed = false;
   const errors: string[] = [];
 
   for (const line of order.line_items ?? []) {
@@ -332,6 +339,64 @@ export async function POST(req: Request) {
     }
   }
 
+  // ---- Donation confirmation (post-loop dispatch) ------------------------
+  // Tier and custom donations both set `donation_id` as a cart attribute when
+  // the route creates the Shopify cart / draft order (Step 5). We dispatch
+  // OFF the cart attribute, not off product_id, because custom-amount draft
+  // orders carry product-less line items (no product_id to match on).
+  //
+  // shopify_draft_order_id is a fallback resolver: if the cart attribute
+  // somehow doesn't propagate, we can still match the order to a pending row
+  // via the draft order id. donation_id remains the primary key.
+  // Note: webhook source_identifier is a numeric id; the donations table
+  // stores GIDs (from Admin GraphQL), so we reconstruct the GID here.
+  //
+  // confirmDonationByShopifyOrder is idempotent on payment_status='pending',
+  // so retries / replays are no-ops.
+  const donationId = getNoteAttribute(order, 'donation_id');
+  const draftOrderId =
+    order.source_name === 'draft_order' && order.source_identifier
+      ? `gid://shopify/DraftOrder/${order.source_identifier}`
+      : null;
+
+  if (donationId || draftOrderId) {
+    try {
+      const result = await confirmDonationByShopifyOrder({
+        shopify_order_id: String(order.id),
+        donation_id: donationId ?? null,
+        shopify_draft_order_id: draftOrderId,
+      });
+
+      if (!result.ok) {
+        errors.push(`confirm-donation: ${result.error}`);
+      } else if (result.updatedCount === 0) {
+        // No matching pending row. Two likely causes:
+        //   (a) idempotent replay — already confirmed on a prior delivery
+        //   (b) genuine anomaly — donation_id set but no pending row exists
+        // Can't distinguish without an extra query. Default to silent and
+        // log via console.warn for human reconciliation. Replay is the more
+        // likely cause; the anomaly case is recoverable from the Shopify
+        // order itself if a human notices.
+        // eslint-disable-next-line no-console
+        console.warn('[shopify-webhook] donation confirm matched 0 rows', {
+          orderName: order.name,
+          donationId: donationId ?? null,
+          draftOrderId,
+        });
+      } else {
+        donationConfirmed = true;
+      }
+    } catch (err) {
+      // Defensive: confirmDonationByShopifyOrder has internal try/catch and
+      // shouldn't throw, but if it does, treat it like any other branch error.
+      // eslint-disable-next-line no-console
+      console.error('[shopify-webhook] confirm-donation threw', err);
+      errors.push(
+        `confirm-donation: ${err instanceof Error ? err.message : 'unknown'}`
+      );
+    }
+  }
+
   // ---- Revalidate roster pages -------------------------------------------
   if (registrationConfirmed) {
     revalidatePath('/teams');
@@ -351,6 +416,7 @@ export async function POST(req: Request) {
       registrationConfirmed,
       bundledTicketsCreated,
       paidTicketsCreated,
+      donationConfirmed,
       errors: errors.length > 0 ? errors : undefined,
     },
     { status: 200 }
