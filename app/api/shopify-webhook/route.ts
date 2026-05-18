@@ -404,6 +404,9 @@ export async function POST(req: Request) {
       revalidatePath(`/teams/${teamSlug}`);
     }
   }
+  if (donationConfirmed) {
+    revalidatePath('/donate');
+  }
 
   // ---- Acknowledge --------------------------------------------------------
   const errorSummary = errors.length > 0 ? errors.join('; ') : undefined;

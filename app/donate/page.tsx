@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import DonationForm from '@/components/DonationForm';
+import DonorWall from '@/components/DonorWall';
 import { DONATION_DISCLAIMER } from '@/lib/donations-config';
+
+// Revalidate at most every 30 seconds. The shopify-webhook handler will
+// trigger explicit revalidation on this path when a donation confirms,
+// so 30s is just a safety net.
+export const revalidate = 30;
 
 export const metadata = {
   title: 'Donate',
@@ -53,6 +59,8 @@ export default function DonatePage() {
         </p>
 
         <DonationForm />
+
+        <DonorWall />
 
         <p
           style={{
