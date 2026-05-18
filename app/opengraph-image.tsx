@@ -15,13 +15,15 @@ const GRAY = '#94a3b8';
 const FONT_STACK =
   "system-ui, -apple-system, 'Segoe UI', sans-serif";
 
-// If radial gradients don't render in Satori on your Vercel runtime, swap
-// `background` on the root <div> with:
-//   background: 'linear-gradient(180deg, #132244 0%, #0a1628 100%)'
-const BACKGROUND =
+// Satori parses each comma-separated value as a background-image and rejects
+// bare colors — unlike browser CSS, it doesn't promote the final value to
+// background-color. So we set the color via backgroundColor and stack only
+// the gradient layers in backgroundImage. If stacked radial-gradients ever
+// stop rendering, fall back to:
+//   backgroundImage: 'linear-gradient(180deg, #132244 0%, #0a1628 100%)'
+const BACKGROUND_IMAGE =
   `radial-gradient(ellipse at top left, rgba(30,58,110,0.6) 0%, transparent 60%),` +
-  `radial-gradient(ellipse at bottom right, rgba(196,30,42,0.25) 0%, transparent 50%),` +
-  `${NAVY}`;
+  `radial-gradient(ellipse at bottom right, rgba(196,30,42,0.25) 0%, transparent 50%)`;
 
 export default async function Image() {
   return new ImageResponse(
@@ -32,7 +34,8 @@ export default async function Image() {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          background: BACKGROUND,
+          backgroundColor: NAVY,
+          backgroundImage: BACKGROUND_IMAGE,
           fontFamily: FONT_STACK,
         }}
       >
