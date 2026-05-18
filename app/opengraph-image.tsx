@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 export const alt =
-  'The 1st Annual Interstate PHAmily Classic — NY vs NJ Basketball & Kickball — August 29, 2026 at Riverbank State Park, NYC. Presented by Adelphic Union Lodge #14.';
+  'The Inaugural Interstate PHAmily Classic — NY vs NJ Basketball & Kickball — August 29, 2026 at Riverbank State Park, NYC. Presented by Adelphic Union Lodge #14.';
 
 export const size = { width: 1200, height: 630 };
 
@@ -85,7 +85,7 @@ export default async function Image() {
                 textTransform: 'uppercase',
               }}
             >
-              THE 1ST ANNUAL
+              THE INAUGURAL
             </div>
             <div
               style={{
