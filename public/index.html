@@ -410,6 +410,67 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   a[href]::after{content:" (" attr(href) ")";font-size:.8em;color:#666;}
   .footer{padding:20px 0;}
 }
+
+/* ===== NY vs NJ CHALLENGE ===== */
+.challenge{position:relative;padding:80px 24px;background:linear-gradient(180deg,#0a1628 0%,#132244 100%);}
+.challenge-bar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--gold);}
+.challenge-inner{max-width:960px;margin:0 auto;text-align:center;display:flex;flex-direction:column;align-items:center;gap:40px;}
+.challenge-headline{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.challenge-team-name{font-family:'Oswald',sans-serif;font-weight:700;font-size:60px;line-height:1;letter-spacing:1px;text-transform:uppercase;}
+.challenge-team-name--gold{color:var(--gold);}
+.challenge-team-name--white{color:var(--white);}
+.challenge-versus-text{font-family:'Oswald',sans-serif;font-weight:400;font-size:28px;letter-spacing:4px;color:var(--white);text-transform:uppercase;}
+.challenge-vs-badge{width:100px;height:100px;border-radius:50%;background:var(--navy);border:4px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:challenge-vs-pulse 2s ease-in-out infinite;}
+.challenge-vs-badge span{font-family:'Oswald',sans-serif;font-weight:700;font-size:48px;line-height:1;animation:challenge-vs-color 3s linear infinite;}
+@keyframes challenge-vs-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
+@keyframes challenge-vs-color{0%,100%{color:var(--gold);}50%{color:var(--red);}}
+.challenge-copy{max-width:720px;display:flex;flex-direction:column;gap:14px;}
+.challenge-copy-line-bold{font-family:'Oswald',sans-serif;font-weight:700;font-size:24px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);line-height:1.2;}
+.challenge-copy-line-body{font-family:'Barlow',sans-serif;font-weight:400;font-size:18px;color:#cbd5e1;line-height:1.5;}
+.challenge-copy-line-finale{font-family:'Oswald',sans-serif;font-weight:700;font-size:22px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);line-height:1.15;margin-top:8px;}
+.challenge-ctas{display:flex;flex-direction:column;gap:16px;width:100%;align-items:stretch;}
+.challenge-cta{position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px;border:1px solid rgba(255,255,255,0.10);border-radius:12px;text-decoration:none;color:inherit;cursor:pointer;transition:transform .2s,border-color .2s,background-color .2s,box-shadow .2s;outline:none;}
+.challenge-cta--ny{background:linear-gradient(135deg,rgba(196,30,42,0.15) 0%,rgba(196,30,42,0.05) 100%);}
+.challenge-cta--nj{background:linear-gradient(135deg,rgba(30,58,110,0.25) 0%,rgba(30,58,110,0.10) 100%);}
+.challenge-cta:hover,.challenge-cta:focus-visible{border-color:var(--gold);transform:translateY(-2px);}
+.challenge-cta--ny:hover,.challenge-cta--ny:focus-visible{background:linear-gradient(135deg,rgba(196,30,42,0.22) 0%,rgba(196,30,42,0.08) 100%);}
+.challenge-cta--nj:hover,.challenge-cta--nj:focus-visible{background:linear-gradient(135deg,rgba(30,58,110,0.35) 0%,rgba(30,58,110,0.15) 100%);}
+.challenge-cta-label{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:12px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);}
+.challenge-cta-team{font-family:'Oswald',sans-serif;font-weight:700;font-size:36px;line-height:1;color:var(--white);}
+.challenge-cta-count{font-family:'Oswald',sans-serif;font-weight:700;font-size:48px;line-height:1;color:var(--gold);}
+.challenge-cta-helper{font-family:'Barlow',sans-serif;font-size:12px;color:var(--gray);}
+.challenge-cta-badge{position:absolute;top:12px;right:12px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;display:none;}
+.challenge-cta--pledged .challenge-cta-badge{display:block;}
+.challenge-cta--pledged{border-color:var(--gold);box-shadow:0 0 30px rgba(245,197,24,0.20);}
+@media(min-width:768px){
+  .challenge{padding:100px 40px;}
+  .challenge-team-name{font-size:90px;}
+  .challenge-versus-text{font-size:36px;}
+  .challenge-copy-line-bold{font-size:32px;}
+  .challenge-copy-line-body{font-size:22px;}
+  .challenge-copy-line-finale{font-size:28px;}
+  .challenge-ctas{flex-direction:row;justify-content:center;gap:24px;align-items:stretch;}
+  .challenge-cta{width:320px;}
+}
+@media(prefers-reduced-motion:reduce){
+  .challenge-vs-badge,.challenge-vs-badge span{animation:none;}
+}
+
+/* ===== PLEDGE MODAL ===== */
+.pledge-modal{position:fixed;inset:0;background:rgba(10,22,40,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:2000;display:none;align-items:center;justify-content:center;padding:24px;}
+.pledge-modal.open{display:flex;}
+.pledge-modal-card{position:relative;max-width:480px;width:90%;background:var(--navy);border:1px solid rgba(245,197,24,0.3);border-radius:12px;padding:40px 32px 28px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.pledge-modal-close{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--gold);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;}
+.pledge-modal-heading{font-family:'Oswald',sans-serif;font-weight:700;font-size:32px;letter-spacing:1px;color:var(--gold);margin-bottom:12px;text-transform:uppercase;}
+.pledge-modal-rank{font-family:'Barlow',sans-serif;font-weight:500;font-size:18px;color:var(--white);margin-bottom:20px;}
+.pledge-modal-body{font-family:'Barlow',sans-serif;font-size:14px;color:var(--gray);margin-bottom:20px;}
+.pledge-modal-ctas{display:flex;flex-direction:column;gap:12px;margin-bottom:18px;}
+.pledge-modal-cta{display:block;padding:14px 20px;font-family:'Oswald',sans-serif;font-weight:600;font-size:14px;letter-spacing:2px;text-transform:uppercase;border-radius:6px;text-decoration:none;transition:transform .2s,background-color .2s;}
+.pledge-modal-cta--primary{background:var(--gold);color:var(--navy);}
+.pledge-modal-cta--primary:hover{background:var(--bright-gold);transform:translateY(-1px);}
+.pledge-modal-cta--outline{background:transparent;color:var(--gold);border:1px solid var(--gold);}
+.pledge-modal-cta--outline:hover{background:rgba(245,197,24,0.10);}
+.pledge-modal-close-link{display:inline-block;font-family:'Barlow',sans-serif;font-size:12px;color:var(--gray);text-decoration:underline;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -497,6 +558,212 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
     </div>
   </div>
 </section>
+
+<!-- NY VS NJ CHALLENGE -->
+<section class="challenge" id="challenge" aria-labelledby="challenge-heading">
+  <div class="challenge-bar" aria-hidden="true"></div>
+  <div class="challenge-inner">
+    <div class="challenge-headline" id="challenge-heading">
+      <div class="challenge-team-name challenge-team-name--gold">NEW YORK</div>
+      <div class="challenge-versus-text">HAS CHALLENGED</div>
+      <div class="challenge-team-name challenge-team-name--white">NEW JERSEY</div>
+    </div>
+
+    <div class="challenge-vs-badge" aria-hidden="true"><span>VS</span></div>
+
+    <div class="challenge-copy">
+      <p class="challenge-copy-line-bold">LET&rsquo;S SEE WHO REALLY GOT THE BEST SQUAD.</p>
+      <p class="challenge-copy-line-body">Let&rsquo;s find out which jurisdiction really got game.</p>
+      <p class="challenge-copy-line-body">Bring your best five. Bring your bench. Bring whoever.</p>
+      <p class="challenge-copy-line-finale">ONE COURT. ONE GAME. ONE JURISDICTION LEAVING WITH BRAGGING RIGHTS.</p>
+    </div>
+
+    <div class="challenge-ctas">
+      <a href="/register" role="button" tabindex="0" class="challenge-cta challenge-cta--ny" data-side="NY" aria-label="I ride with New York">
+        <div class="challenge-cta-badge" aria-hidden="true">&#10003; YOU&rsquo;RE WITH US</div>
+        <div class="challenge-cta-label">I RIDE WITH</div>
+        <div class="challenge-cta-team">NEW YORK</div>
+        <div class="challenge-cta-count" id="ny-count">&mdash;</div>
+        <div class="challenge-cta-helper">people riding with us</div>
+      </a>
+      <a href="/register" role="button" tabindex="0" class="challenge-cta challenge-cta--nj" data-side="NJ" aria-label="I ride with New Jersey">
+        <div class="challenge-cta-badge" aria-hidden="true">&#10003; YOU&rsquo;RE WITH US</div>
+        <div class="challenge-cta-label">I RIDE WITH</div>
+        <div class="challenge-cta-team">NEW JERSEY</div>
+        <div class="challenge-cta-count" id="nj-count">&mdash;</div>
+        <div class="challenge-cta-helper">people riding with us</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Pledge confirmation modal (sibling to challenge section) -->
+<div class="pledge-modal" id="pledge-modal" role="dialog" aria-modal="true" aria-labelledby="pledge-modal-heading" aria-hidden="true">
+  <div class="pledge-modal-card">
+    <button class="pledge-modal-close" type="button" aria-label="Close">&times;</button>
+    <h3 class="pledge-modal-heading" id="pledge-modal-heading">WELCOME TO TEAM NY</h3>
+    <p class="pledge-modal-rank" id="pledge-modal-rank">You&rsquo;re rider #&mdash;</p>
+    <p class="pledge-modal-body">Want to do more?</p>
+    <div class="pledge-modal-ctas">
+      <a href="/register" class="pledge-modal-cta pledge-modal-cta--primary">REGISTER TO PLAY</a>
+      <a href="https://whencecameyouniversity.com/collections/all" target="_blank" rel="noopener" class="pledge-modal-cta pledge-modal-cta--outline">GET A TICKET</a>
+    </div>
+    <a href="#" class="pledge-modal-close-link">Close</a>
+  </div>
+</div>
+
+<!-- Pledge logic: vanilla JS, Supabase via CDN ESM. No-JS users still see -->
+<!-- the section render correctly; the CTAs fall back to /register hrefs.   -->
+<script type="module">
+// ============================================================================
+// TODO: paste the real values below before deploying.
+// These are PUBLIC-SAFE — the Supabase anon key is designed to be exposed in
+// browser code; RLS policies on team_pledges constrain what it can do.
+// Get the values from Vercel Dashboard → Settings → Environment Variables →
+// reveal SUPABASE_URL and SUPABASE_ANON_KEY. (Or temporarily uncheck the
+// "Sensitive" flag on those two vars and run `vercel env pull` again.)
+// ============================================================================
+const SUPABASE_URL = 'https://jjsmouejbqtlhygyucai.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_pvI6-q_P0VKbgmtEvQFUFg_M5hhdqd2';
+
+const PLEDGE_KEY = 'phamily_pledge';
+const DEVICE_KEY = 'phamily_device_id';
+
+let supabase = null;
+try {
+  if (SUPABASE_URL.startsWith('http')) {
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.warn('[pledge] Supabase URL is a placeholder. Live counts and persistence disabled until real values are set.');
+  }
+} catch (e) { console.error('[pledge] Supabase init failed', e); }
+
+let deviceId = localStorage.getItem(DEVICE_KEY);
+if (!deviceId) {
+  deviceId = (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + '-' + Math.random().toString(36).slice(2));
+  localStorage.setItem(DEVICE_KEY, deviceId);
+}
+let pledgedSide = localStorage.getItem(PLEDGE_KEY);
+
+const nyCountEl = document.getElementById('ny-count');
+const njCountEl = document.getElementById('nj-count');
+const nyBtn = document.querySelector('.challenge-cta--ny');
+const njBtn = document.querySelector('.challenge-cta--nj');
+const modal = document.getElementById('pledge-modal');
+const modalHeading = document.getElementById('pledge-modal-heading');
+const modalRank = document.getElementById('pledge-modal-rank');
+
+let counts = { NY: 0, NJ: 0 };
+let lastFocused = null;
+
+function renderCounts() {
+  if (nyCountEl) nyCountEl.textContent = counts.NY > 0 ? counts.NY.toLocaleString() : '—';
+  if (njCountEl) njCountEl.textContent = counts.NJ > 0 ? counts.NJ.toLocaleString() : '—';
+}
+
+function renderPledgedState() {
+  [nyBtn, njBtn].forEach(b => b && b.classList.remove('challenge-cta--pledged'));
+  if (pledgedSide === 'NY' && nyBtn) nyBtn.classList.add('challenge-cta--pledged');
+  if (pledgedSide === 'NJ' && njBtn) njBtn.classList.add('challenge-cta--pledged');
+}
+
+async function fetchCounts() {
+  if (!supabase) return;
+  try {
+    const [ny, nj] = await Promise.all([
+      supabase.from('team_pledges').select('*', { count: 'exact', head: true }).eq('side', 'NY'),
+      supabase.from('team_pledges').select('*', { count: 'exact', head: true }).eq('side', 'NJ'),
+    ]);
+    if (typeof ny.count === 'number') counts.NY = ny.count;
+    if (typeof nj.count === 'number') counts.NJ = nj.count;
+    renderCounts();
+  } catch (e) { console.error('[pledge] fetchCounts', e); }
+}
+
+function openModal(side, rank) {
+  if (!modal) return;
+  lastFocused = document.activeElement;
+  modalHeading.textContent = 'WELCOME TO TEAM ' + side;
+  modalRank.textContent = "You’re rider #" + (rank > 0 ? rank.toLocaleString() : '—');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+  const closeBtn = modal.querySelector('.pledge-modal-close');
+  if (closeBtn) closeBtn.focus();
+}
+
+function closeModal() {
+  if (!modal) return;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+  if (lastFocused && lastFocused.focus) lastFocused.focus();
+}
+
+async function handlePledge(side) {
+  const prev = pledgedSide;
+
+  // Optimistic local update for instant feedback
+  pledgedSide = side;
+  localStorage.setItem(PLEDGE_KEY, side);
+  if (prev !== side) counts[side] = (counts[side] || 0) + 1;
+  if (prev && prev !== side) counts[prev] = Math.max(0, (counts[prev] || 0) - 1);
+  renderCounts();
+  renderPledgedState();
+  openModal(side, counts[side]);
+
+  // Sync to Supabase. Failures don't block the UX — user already sees the modal.
+  if (!supabase) return;
+  try {
+    const { error } = await supabase.from('team_pledges').upsert({
+      device_id: deviceId,
+      side: side,
+      user_agent: (navigator.userAgent || '').slice(0, 500),
+    }, { onConflict: 'device_id' });
+    if (error) console.error('[pledge] upsert error', error);
+  } catch (e) { console.error('[pledge] upsert exception', e); }
+}
+
+function bindButton(btn) {
+  if (!btn) return;
+  function go(e) {
+    e.preventDefault();
+    handlePledge(btn.dataset.side);
+  }
+  btn.addEventListener('click', go);
+  btn.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') go(e);
+  });
+}
+bindButton(nyBtn);
+bindButton(njBtn);
+
+if (modal) {
+  const closeBtn = modal.querySelector('.pledge-modal-close');
+  const closeLink = modal.querySelector('.pledge-modal-close-link');
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (closeLink) closeLink.addEventListener('click', e => { e.preventDefault(); closeModal(); });
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
+  });
+}
+
+renderPledgedState();
+fetchCounts();
+
+if (supabase) {
+  try {
+    supabase
+      .channel('public:team_pledges')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'team_pledges' },
+        () => fetchCounts())
+      .subscribe();
+  } catch (e) { console.error('[pledge] realtime subscribe', e); }
+}
+</script>
 
 <!-- TICKER -->
 <div class="ticker" aria-hidden="true">
