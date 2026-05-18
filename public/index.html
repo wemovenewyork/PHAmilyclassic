@@ -254,6 +254,15 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .tickets-feat{display:flex;align-items:center;gap:8px;font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--light-gray);}
 .tickets-feat svg{width:16px;height:16px;color:var(--gold);}
 
+/* ===== DONATE (homepage section) ===== */
+.donate-home{background:var(--deep-blue);position:relative;text-align:center;}
+.donate-home::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(245,197,24,.06),transparent 60%);}
+.donate-home-content{position:relative;z-index:2;max-width:700px;margin:0 auto;}
+.donate-tier-chips{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:8px;}
+.donate-tier-chip{display:inline-block;padding:8px 20px;border:1px solid var(--gold);border-radius:30px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.95rem;letter-spacing:2px;color:var(--gold);background:transparent;}
+.donate-wall-link{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);text-decoration:underline;text-underline-offset:4px;}
+.donate-wall-link:hover{color:var(--bright-gold);}
+
 /* ===== AFTER PARTY ===== */
 .afterparty{background:linear-gradient(180deg,var(--deep-blue),var(--navy));position:relative;overflow:hidden;text-align:center;}
 .afterparty::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(245,197,24,.08),transparent 60%);}
@@ -974,6 +983,35 @@ if (supabase) {
       Buy Tickets
     </a>
     <p style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--gray);margin-top:16px;opacity:.7;">All sales are final — No refunds or exchanges</p>
+  </div>
+</section>
+
+<!-- DONATE -->
+<section class="donate-home section" id="donate-home" aria-labelledby="donate-home-title">
+  <div class="donate-home-content reveal">
+    <div class="section-label">Back the PHAmily</div>
+    <h2 class="section-title" id="donate-home-title">Can&rsquo;t make it? Still ride with us.</h2>
+    <p class="section-desc" style="max-width:100%;text-align:center;margin:0 auto 32px;">
+      Your gift supports the events and community work of AUL #14 — the Classic, scholarships, and the PHAmily programming that keeps this thing moving year-round.
+    </p>
+
+    <div class="donate-tier-chips">
+      <span class="donate-tier-chip">$25</span>
+      <span class="donate-tier-chip">$50</span>
+      <span class="donate-tier-chip">$100</span>
+      <span class="donate-tier-chip">$250</span>
+    </div>
+
+    <div style="margin-top:36px;">
+      <a href="/donate" class="btn-primary" style="background:var(--gold);color:var(--navy);font-size:1.1rem;padding:16px 44px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Donate to the PHAmily
+      </a>
+    </div>
+
+    <div style="margin-top:20px;">
+      <a href="/donate#wall" class="donate-wall-link">See who&rsquo;s backed us →</a>
+    </div>
   </div>
 </section>
 
