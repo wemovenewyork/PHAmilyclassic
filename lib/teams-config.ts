@@ -85,8 +85,8 @@ export const TEAMS: readonly Team[] = [
   },
   {
     slug: 'nj-knights',
-    name: 'NJ Knights of Pythagoras Team',
-    shortName: 'NJ Knights',
+    name: 'NJ Youth Games Team',
+    shortName: 'NJ Youth Games',
     region: 'NJ',
     sport: 'knights-of-pythagoras',
     ageGroup: 'youth',
@@ -97,8 +97,8 @@ export const TEAMS: readonly Team[] = [
   },
   {
     slug: 'ny-knights',
-    name: 'NY Knights of Pythagoras Team',
-    shortName: 'NY Knights',
+    name: 'NY Youth Games Team',
+    shortName: 'NY Youth Games',
     region: 'NY',
     sport: 'knights-of-pythagoras',
     ageGroup: 'youth',

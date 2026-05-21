@@ -59,7 +59,7 @@ export default async function TeamDetailPage({ params }: Props) {
         >
           {team.region}{' '}
           {team.sport === 'knights-of-pythagoras'
-            ? 'Knights of Pythagoras'
+            ? 'Youth Games'
             : team.sport.charAt(0).toUpperCase() + team.sport.slice(1)}
         </p>
         <h1

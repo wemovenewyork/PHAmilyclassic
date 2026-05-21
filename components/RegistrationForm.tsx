@@ -350,7 +350,7 @@ export default function RegistrationForm({ teams }: { teams: TeamWithCount[] }) 
                   }}
                 >
                   {t.ageGroup === 'youth' ? 'Youth (ages 9–20)' : 'Adult'} ·{' '}
-                  {t.region} {t.sport === 'knights-of-pythagoras' ? 'Knights' : t.sport}
+                  {t.region} {t.sport === 'knights-of-pythagoras' ? 'Youth Games' : t.sport}
                 </div>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -497,7 +497,7 @@ export default function RegistrationForm({ teams }: { teams: TeamWithCount[] }) 
                 Parent / Guardian Information
               </p>
               <p style={{ fontSize: '0.85rem', color: 'var(--gray)', lineHeight: 1.6 }}>
-                Required for Knights of Pythagoras (youth) registrations. The
+                Required for Youth Games (youth) registrations. The
                 guardian must be present for uniform pickup with valid ID.
               </p>
 
