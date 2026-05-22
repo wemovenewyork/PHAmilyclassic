@@ -200,6 +200,8 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .timeline-time{font-family:'Oswald',sans-serif;font-weight:600;font-size:1rem;color:var(--gold);letter-spacing:1px;margin-bottom:4px;}
 .timeline-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.2rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
 .timeline-desc{font-family:'Barlow',sans-serif;font-weight:300;font-size:.9rem;color:var(--gray);line-height:1.6;}
+.timeline-afterparty-badge{display:block;margin-top:12px;max-width:140px;width:100%;height:auto;}
+@media(max-width:600px){.timeline-afterparty-badge{max-width:110px;}}
 
 /* ===== EVENTS/GAMES ===== */
 .events{background:var(--deep-blue);position:relative;}
@@ -270,6 +272,8 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .afterparty-badge{display:inline-block;padding:8px 24px;border:1px solid var(--gold);border-radius:30px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;}
 .afterparty-address{font-family:'Barlow',sans-serif;font-weight:400;font-size:1.1rem;color:var(--light-gray);margin-top:16px;line-height:1.6;}
 .afterparty-venue{font-family:'Oswald',sans-serif;font-weight:600;font-size:1.2rem;color:var(--gold);margin-top:8px;}
+.afterparty-logo{display:block;margin:0 auto 24px;max-width:min(380px,80vw);width:100%;height:auto;}
+@media(max-width:600px){.afterparty-logo{max-width:min(280px,70vw);margin-bottom:16px;}}
 
 /* ===== FAQ ===== */
 .faq{background:var(--deep-blue);position:relative;}
@@ -894,7 +898,7 @@ if (supabase) {
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">5:00 PM</div><div class="timeline-title">Live Cultural Stage Performances</div><div class="timeline-desc">Live music, DJ sets, and cultural performances celebrating the rich heritage of NYC and surrounding areas.</div></div>
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">5:30 PM</div><div class="timeline-title">NY vs NJ Basketball</div><div class="timeline-desc">The main event. New York vs New Jersey Masonic Jurisdiction basketball — high energy, high stakes, and bragging rights on the line for the inaugural Classic trophy.</div></div>
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">6:30 PM</div><div class="timeline-title">Awards & Closing Ceremony</div><div class="timeline-desc">Trophy presentation, MVP awards, and closing remarks.</div></div>
-      <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">7:00 PM</div><div class="timeline-title">Event Concludes — After Party</div><div class="timeline-desc">Head to the Most Worshipful Prince Hall Grand Lodge for the official after party!</div></div>
+      <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">7:00 PM</div><div class="timeline-title">Event Concludes — After Party</div><div class="timeline-desc">Head to the Most Worshipful Prince Hall Grand Lodge for the official after party!</div><img src="/after-party-logo.png" alt="" class="timeline-afterparty-badge" loading="lazy" decoding="async" aria-hidden="true" /></div>
     </div>
   </div>
 </section>
@@ -1020,6 +1024,7 @@ if (supabase) {
 <!-- AFTER PARTY -->
 <section class="afterparty section" id="afterparty" aria-labelledby="afterparty-title">
   <div class="afterparty-content reveal">
+    <img src="/after-party-logo.png" alt="Interstate After Party at the Grand East" class="afterparty-logo" loading="lazy" decoding="async" />
     <div class="afterparty-badge">Official After Party</div>
     <h2 class="section-title" id="afterparty-title" style="text-align:center;">The Celebration Continues</h2>
     <p class="section-desc" style="max-width:100%;text-align:center;margin:0 auto;">After the final whistle, the PHAmily keeps the energy going at the official after party. Join us for an evening of music, fellowship, and celebration.</p>
