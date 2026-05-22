@@ -79,3 +79,119 @@ select {
   text-transform: uppercase;
   color: var(--gold);
 }
+
+/* Footer — mirrors public/index.html so the SiteFooter component on
+   Next.js routes is visually identical to the static homepage footer. */
+.footer {
+  background: var(--deep-blue);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 60px 40px 30px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.footer-col h4 {
+  font-family: var(--font-oswald), 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.footer-col p {
+  font-family: var(--font-barlow), 'Barlow', sans-serif;
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: var(--gray);
+  line-height: 1.7;
+}
+.footer-col a {
+  display: block;
+  font-family: var(--font-barlow-condensed), 'Barlow Condensed', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: 4px 0;
+  transition: color 0.3s;
+}
+.footer-col a:hover {
+  color: var(--gold);
+}
+.footer-brand {
+  font-family: var(--font-oswald), 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.footer-brand-sub {
+  font-family: var(--font-barlow-condensed), 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gray);
+  margin-bottom: 16px;
+}
+.footer-social {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.footer-social a {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s;
+}
+.footer-social a:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.footer-social a:hover svg {
+  color: var(--navy);
+}
+.footer-social svg {
+  width: 16px;
+  height: 16px;
+  color: var(--gray);
+}
+.footer-bottom {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-copy {
+  font-family: var(--font-barlow), 'Barlow', sans-serif;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 900px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+}
+@media (max-width: 600px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
