@@ -73,26 +73,26 @@ export const registrationFormSchema = z
     if (!team) return; // already errored above
 
     if (team.ageGroup === 'youth') {
-      // Knights teams require guardian fields
+      // Youth Games teams require guardian fields
       if (!data.guardian_name || data.guardian_name.trim().length < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['guardian_name'],
-          message: "Guardian's name is required for Knights teams",
+          message: "Guardian's name is required for Youth Games teams",
         });
       }
       if (!data.guardian_phone || data.guardian_phone.trim().length < 7) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['guardian_phone'],
-          message: "Guardian's phone is required for Knights teams",
+          message: "Guardian's phone is required for Youth Games teams",
         });
       }
       if (!data.guardian_email || !data.guardian_email.includes('@')) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           path: ['guardian_email'],
-          message: "Guardian's email is required for Knights teams",
+          message: "Guardian's email is required for Youth Games teams",
         });
       }
 
