@@ -105,7 +105,7 @@ export default async function TeamsPage() {
                 >
                   {t.region}{' '}
                   {t.sport === 'knights-of-pythagoras'
-                    ? 'Knights'
+                    ? 'Youth Games'
                     : t.sport.charAt(0).toUpperCase() + t.sport.slice(1)}
                 </p>
                 <h2
