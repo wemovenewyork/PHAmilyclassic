@@ -160,7 +160,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto;align-items:center;}
 .about-image{position:relative;}
 .about-image-inner{width:100%;display:flex;align-items:center;justify-content:center;}
-.flyer-rotator{position:relative;width:100%;max-width:min(720px,94vw);margin:0 auto;aspect-ratio:3/4;}
+.flyer-rotator{position:relative;width:100%;max-width:min(720px,94vw);margin:0 auto;aspect-ratio:1/1;}
 .flyer-rotator-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;object-position:center;opacity:0;transition:opacity 1.2s ease-in-out;will-change:opacity;}
 .flyer-rotator-img.flyer-rotator-active{opacity:1;}
 @media(prefers-reduced-motion:reduce){.flyer-rotator-img{transition:opacity 0s;}}
@@ -833,7 +833,7 @@ if (supabase) {
     <div class="about-image reveal">
       <div class="about-image-inner">
         <div class="flyer-rotator" role="img" aria-label="Interstate PHAmily Classic event flyers">
-          <img src="/flyer-challenge.jpg" alt="Interstate PHAmily Classic — NEW JERSEY: We Challenge You" class="flyer-rotator-img flyer-rotator-active" loading="eager" decoding="async" />
+          <img src="/youth-games-logo.png" alt="PHAmily Classic Youth Games logo" class="flyer-rotator-img flyer-rotator-active" loading="eager" decoding="async" />
           <img src="/flyer-event.jpg" alt="Interstate PHAmily Classic — inaugural event details" class="flyer-rotator-img" loading="lazy" decoding="async" />
           <img src="/after-party-logo.png" alt="Interstate After Party at the Grand East" class="flyer-rotator-img" loading="lazy" decoding="async" />
         </div>
