@@ -1,7 +1,7 @@
 import 'server-only';
 import PDFDocument from 'pdfkit';
 import { generateQRBuffer } from './qr';
-import { getTeamBySlug, EVENT } from './teams-config';
+import { getTeamBySlug } from './teams-config';
 
 /**
  * PDF generation for ticket confirmation emails.
@@ -42,25 +42,14 @@ const PAGE_W = 612;
 const PAGE_H = 792;
 const MARGIN = 54; // 0.75 inch
 
+// Customer-facing ticket label. Drives off the `event` column so the data
+// model (`ticket_type` enum) stays unchanged but everyone sees the same
+// wording regardless of whether the ticket is team_registration / spectator
+// / comp — all main_event tickets are "Basketball Games."
 function ticketTypeLabel(t: TicketForPDF): string {
-  if (t.ticket_type === 'team_registration') return 'TEAM REGISTRATION';
-  if (t.ticket_type === 'after_party') return 'AFTER PARTY TICKET';
-  if (t.ticket_type === 'comp') return 'COMPLIMENTARY';
-  return t.event === 'after_party' ? 'AFTER PARTY TICKET' : 'MAIN EVENT TICKET';
-}
-
-function eventDateLine(t: TicketForPDF): string {
-  if (t.event === 'after_party') {
-    return 'Saturday, August 29, 2026 · 9:00 PM onward';
-  }
-  return 'Saturday, August 29, 2026 · 1:00 PM – 7:00 PM';
-}
-
-function eventVenueLine(t: TicketForPDF): string {
-  if (t.event === 'after_party') {
-    return 'MW Prince Hall Grand Lodge of New York · 454 W. 155th St, New York, NY 10032';
-  }
-  return `${EVENT.venue} · ${EVENT.venueAddress}`;
+  return t.event === 'after_party'
+    ? 'PHAmily Classic — After Party'
+    : 'PHAmily Classic — Basketball Games';
 }
 
 export async function generateTicketPDF(
@@ -174,26 +163,61 @@ function renderTicketPage(
       characterSpacing: 3,
     });
 
-  // ----- Event details -----
-  let y = qrY + QR_SIZE + 50;
-  doc
-    .fillColor(TEXT)
-    .font('Helvetica-Bold')
-    .fontSize(10)
-    .text(eventDateLine(ticket), MARGIN, y, {
-      width: PAGE_W - 2 * MARGIN,
-      align: 'center',
-    });
+  // ----- Event details (per-type) -----
+  let y = qrY + QR_SIZE + 44;
+  const centerOpts = { width: PAGE_W - 2 * MARGIN, align: 'center' as const };
+
+  // Date — always the same; bold.
+  doc.fillColor(TEXT).font('Helvetica-Bold').fontSize(11);
+  doc.text('Saturday, August 29, 2026', MARGIN, y, centerOpts);
   y += 16;
-  doc
-    .font('Helvetica')
-    .fontSize(9)
-    .fillColor(MUTED)
-    .text(eventVenueLine(ticket), MARGIN, y, {
-      width: PAGE_W - 2 * MARGIN,
-      align: 'center',
-    });
-  y += 30;
+
+  if (ticket.event === 'after_party') {
+    // After-party tickets — Grand Lodge, 9 PM doors. No wristband, no kickball.
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(TEXT);
+    doc.text('Doors · 9:00 PM', MARGIN, y, centerOpts);
+    y += 16;
+    doc.font('Helvetica').fontSize(10).fillColor(TEXT);
+    doc.text(
+      'Most Worshipful Prince Hall Grand Lodge of New York',
+      MARGIN,
+      y,
+      centerOpts,
+    );
+    y += 14;
+    doc.font('Helvetica').fontSize(9).fillColor(MUTED);
+    doc.text('454 W 155th St, New York, NY 10032', MARGIN, y, centerOpts);
+    y += 20;
+  } else {
+    // Basketball-games tickets — gym doors 3, games 4–7, wristband, kickball context.
+    doc.font('Helvetica').fontSize(10).fillColor(MUTED);
+    doc.text('Riverbank State Park, NYC', MARGIN, y, centerOpts);
+    y += 18;
+
+    doc.font('Helvetica-Bold').fontSize(11).fillColor(TEXT);
+    doc.text('Gymnasium Doors Open · 3:00 PM', MARGIN, y, centerOpts);
+    y += 14;
+    doc.text('Games Run · 4:00 PM – 7:00 PM', MARGIN, y, centerOpts);
+    y += 18;
+
+    doc.font('Helvetica').fontSize(9).fillColor(MUTED);
+    doc.text(
+      "After your ticket is scanned at gymnasium entry, you'll receive a wristband for re-entry.",
+      MARGIN,
+      y,
+      centerOpts,
+    );
+    y += 24;
+
+    doc.font('Helvetica-Oblique').fontSize(9).fillColor(MUTED);
+    doc.text(
+      'OES Invitational Kickball — 1:00 PM, outdoors at Riverbank State Park',
+      MARGIN,
+      y,
+      centerOpts,
+    );
+    y += 22;
+  }
 
   // ----- Team registration metadata -----
   if (ticket.ticket_type === 'team_registration' && ticket.team_slug) {
@@ -275,7 +299,7 @@ function renderTicketPage(
     align: 'right',
   });
   doc.text(
-    'Presented by Adelphic Union Lodge #14, F. & A.M., State of New York',
+    'Presented by Adelphic Union Lodge #14, MWPHGLNY',
     MARGIN,
     footerY + 14,
     {
