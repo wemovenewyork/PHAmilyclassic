@@ -116,6 +116,13 @@ export const SPECTATOR_TICKET = {
   price: 20,
 } as const;
 
+/** The PHAmily Classic after-party ticket Shopify product. */
+export const AFTER_PARTY_TICKET = {
+  shopifyProductGid: 'gid://shopify/Product/10441917595829',
+  shopifyProductId: '10441917595829',
+  price: 25,
+} as const;
+
 /** Hard registration deadline. Past this, /register redirects to /register/closed. */
 export const REGISTRATION_DEADLINE_ISO = '2026-07-13T03:59:59Z'; // July 12, 11:59:59 PM ET
 export const REGISTRATION_DEADLINE_DISPLAY = 'July 12, 2026';

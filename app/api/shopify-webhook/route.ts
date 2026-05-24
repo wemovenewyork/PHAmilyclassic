@@ -5,13 +5,27 @@ import crypto from 'node:crypto';
 import {
   confirmRegistration,
   createTicket,
+  getRegistrationById,
+  getTicketsByOrderId,
   isWebhookProcessed,
+  markTicketsEmailSent,
   markWebhookProcessed,
   recordWebhookEvent,
+  type TicketRow,
 } from '@/lib/db-admin';
 import { confirmVendor } from '@/lib/db-vendors';
 import { confirmDonationByShopifyOrder } from '@/lib/db-donations';
-import { SPECTATOR_TICKET, TEAMS, getTeamBySlug } from '@/lib/teams-config';
+import {
+  AFTER_PARTY_TICKET,
+  SPECTATOR_TICKET,
+  TEAMS,
+  getTeamBySlug,
+} from '@/lib/teams-config';
+import { generateTicketToken } from '@/lib/ticket-tokens';
+import { generateQRDataUrl } from '@/lib/qr';
+import { generateTicketPDF } from '@/lib/ticket-pdf';
+import { renderTicketEmail } from '@/lib/ticket-email';
+import { sendEmail } from '@/lib/email';
 
 /**
  * Shopify webhook receiver for `orders/paid` events.
@@ -24,11 +38,17 @@ import { SPECTATOR_TICKET, TEAMS, getTeamBySlug } from '@/lib/teams-config';
  *      without re-processing.
  *   4. Parse the order JSON. Walk line_items. For each line item:
  *      - Team registration product → confirm the pending Supabase row,
- *        create 2 bundled-spectator tickets.
- *      - Spectator ticket product → create N paid-spectator tickets where
- *        N = line_item.quantity.
- *   5. Revalidate /teams and /teams/[slug] so the roster pages refresh.
- *   6. Mark webhook processed, ack 200.
+ *        create 1 team_registration ticket (player) + 2 spectator tickets
+ *        per quantity (event: main_event).
+ *      - After-party product → create N after_party tickets where
+ *        N = line_item.quantity (event: after_party).
+ *      - Spectator ticket product → create N spectator tickets (event:
+ *        main_event).
+ *   5. If any tickets were created for this order, query them back, build
+ *      a PDF + email with inline QR codes, send via Resend, and stamp
+ *      tickets with email_sent_at + resend_email_id.
+ *   6. Revalidate /teams and /teams/[slug] so the roster pages refresh.
+ *   7. Mark webhook processed, ack 200.
  *
  * Shopify expects a 200 response within 5 seconds. If the handler is slow
  * (e.g. emailing tickets), Shopify retries with exponential backoff — the
@@ -134,6 +154,7 @@ function getBuyerEmail(order: ShopifyOrder): string {
 // Team product IDs as a Set for quick lookup
 const TEAM_PRODUCT_IDS = new Set(TEAMS.map((t) => t.shopifyProductId));
 const SPECTATOR_PRODUCT_ID = SPECTATOR_TICKET.shopifyProductId;
+const AFTER_PARTY_PRODUCT_ID = AFTER_PARTY_TICKET.shopifyProductId;
 const VENDOR_PRODUCT_ID = '10440053784757';
 
 // ============================================================================
@@ -215,20 +236,24 @@ export async function POST(req: Request) {
   // ---- Process line items -------------------------------------------------
   const buyerName = getBuyerName(order);
   const buyerEmail = getBuyerEmail(order);
+  const buyerFirstName = order.customer?.first_name ?? '';
   const registrationId = getNoteAttribute(order, 'registration_id');
   const teamSlug = getNoteAttribute(order, 'team_slug');
   const vendorId = getNoteAttribute(order, 'vendor_id');
 
   let registrationConfirmed = false;
-  let bundledTicketsCreated = 0;
-  let paidTicketsCreated = 0;
+  let teamRegTicketsCreated = 0;
+  let spectatorTicketsCreated = 0;
+  let afterPartyTicketsCreated = 0;
   let donationConfirmed = false;
+  const createdTicketIds: string[] = [];
   const errors: string[] = [];
 
   for (const line of order.line_items ?? []) {
     const productId = String(line.product_id);
+    const lineItemId = String(line.id);
 
-    // Team registration product
+    // ---- Team registration product ----
     if (TEAM_PRODUCT_IDS.has(productId)) {
       // Confirm the pending registration row
       if (registrationId && !registrationConfirmed) {
@@ -263,26 +288,66 @@ export async function POST(req: Request) {
         errors.push(`team-product-no-registration-id: line ${line.id}`);
       }
 
-      // Create the 2 bundled spectator tickets (one per quantity unit)
-      const ticketsToCreate = 2 * line.quantity;
-      for (let i = 0; i < ticketsToCreate; i++) {
-        const ticket = await createTicket({
-          shopify_order_id: String(order.id),
-          shopify_order_name: order.name,
-          registration_id: registrationId ?? null,
-          ticket_kind: 'bundled-spectator',
-          buyer_name: buyerName,
-          buyer_email: buyerEmail,
-        });
-        if (ticket.ok) {
-          bundledTicketsCreated++;
+      // Generate tickets:
+      //   1 team_registration ticket per quantity (holder = the player)
+      //   2 spectator tickets per quantity (holder = the buyer)
+      // Both event: 'main_event'.
+      const regDetails = registrationId
+        ? await getRegistrationById(registrationId)
+        : null;
+
+      for (let q = 0; q < line.quantity; q++) {
+        if (regDetails) {
+          const teamTicket = await createTicket({
+            token: generateTicketToken(),
+            shopify_order_id: String(order.id),
+            shopify_order_number: order.name,
+            shopify_line_item_id: lineItemId,
+            ticket_type: 'team_registration',
+            event: 'main_event',
+            holder_name: regDetails.full_name,
+            holder_email: regDetails.email,
+            holder_phone: regDetails.phone,
+            team_slug: regDetails.team_slug,
+            jersey_size: regDetails.jersey_size,
+            shorts_size: regDetails.shorts_size,
+            age_group: regDetails.is_youth ? 'youth' : 'adult',
+            guardian_name: regDetails.guardian_name,
+            guardian_phone: regDetails.guardian_phone,
+          });
+          if (teamTicket.ok) {
+            createdTicketIds.push(teamTicket.ticketId);
+            teamRegTicketsCreated++;
+          } else {
+            errors.push(`create-team-ticket: ${teamTicket.error}`);
+          }
         } else {
-          errors.push(`create-bundled-ticket: ${ticket.error}`);
+          errors.push(
+            `team-reg-details-unavailable: order ${order.name} line ${lineItemId}`
+          );
+        }
+
+        for (let s = 0; s < 2; s++) {
+          const specTicket = await createTicket({
+            token: generateTicketToken(),
+            shopify_order_id: String(order.id),
+            shopify_order_number: order.name,
+            shopify_line_item_id: lineItemId,
+            ticket_type: 'spectator',
+            event: 'main_event',
+            holder_name: buyerName,
+            holder_email: buyerEmail,
+          });
+          if (specTicket.ok) {
+            createdTicketIds.push(specTicket.ticketId);
+            spectatorTicketsCreated++;
+          } else {
+            errors.push(`create-spectator-bundled: ${specTicket.error}`);
+          }
         }
       }
     }
-    // Spectator ticket product
-    // Vendor package product
+    // ---- Vendor package product ----
     else if (productId === VENDOR_PRODUCT_ID) {
       if (vendorId) {
         const result = await confirmVendor({
@@ -312,20 +377,45 @@ export async function POST(req: Request) {
         errors.push(`vendor-product-no-vendor-id: line ${line.id}`);
       }
     }
-    else if (productId === SPECTATOR_PRODUCT_ID) {
-      for (let i = 0; i < line.quantity; i++) {
+    // ---- After-party ticket product ----
+    else if (productId === AFTER_PARTY_PRODUCT_ID) {
+      for (let q = 0; q < line.quantity; q++) {
         const ticket = await createTicket({
+          token: generateTicketToken(),
           shopify_order_id: String(order.id),
-          shopify_order_name: order.name,
-          registration_id: null,
-          ticket_kind: 'paid-spectator',
-          buyer_name: buyerName,
-          buyer_email: buyerEmail,
+          shopify_order_number: order.name,
+          shopify_line_item_id: lineItemId,
+          ticket_type: 'after_party',
+          event: 'after_party',
+          holder_name: buyerName,
+          holder_email: buyerEmail,
         });
         if (ticket.ok) {
-          paidTicketsCreated++;
+          createdTicketIds.push(ticket.ticketId);
+          afterPartyTicketsCreated++;
         } else {
-          errors.push(`create-paid-ticket: ${ticket.error}`);
+          errors.push(`create-after-party-ticket: ${ticket.error}`);
+        }
+      }
+    }
+    // ---- Standalone spectator ticket product ----
+    else if (productId === SPECTATOR_PRODUCT_ID) {
+      for (let q = 0; q < line.quantity; q++) {
+        const ticket = await createTicket({
+          token: generateTicketToken(),
+          shopify_order_id: String(order.id),
+          shopify_order_number: order.name,
+          shopify_line_item_id: lineItemId,
+          ticket_type: 'spectator',
+          event: 'main_event',
+          holder_name: buyerName,
+          holder_email: buyerEmail,
+        });
+        if (ticket.ok) {
+          createdTicketIds.push(ticket.ticketId);
+          spectatorTicketsCreated++;
+        } else {
+          errors.push(`create-spectator-standalone: ${ticket.error}`);
         }
       }
     } else {
@@ -336,6 +426,28 @@ export async function POST(req: Request) {
         productId,
         title: line.title,
       });
+    }
+  }
+
+  // ---- Email dispatch (post-loop) -----------------------------------------
+  // If any tickets were created for this order, query them back, build a
+  // PDF + email, send via Resend, and stamp the rows with email_sent_at
+  // + resend_email_id. Failures here don't fail the webhook — leaving
+  // email_sent_at NULL lets an admin retry later.
+  let emailSent = false;
+  if (createdTicketIds.length > 0 && buyerEmail) {
+    try {
+      emailSent = await dispatchTicketEmail({
+        shopifyOrderId: String(order.id),
+        buyerEmail,
+        buyerFirstName,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[shopify-webhook] dispatch-ticket-email threw', err);
+      errors.push(
+        `dispatch-ticket-email: ${err instanceof Error ? err.message : 'unknown'}`
+      );
     }
   }
 
@@ -417,8 +529,10 @@ export async function POST(req: Request) {
       ok: true,
       orderId: order.id,
       registrationConfirmed,
-      bundledTicketsCreated,
-      paidTicketsCreated,
+      teamRegTicketsCreated,
+      spectatorTicketsCreated,
+      afterPartyTicketsCreated,
+      emailSent,
       donationConfirmed,
       errors: errors.length > 0 ? errors : undefined,
     },
@@ -431,4 +545,88 @@ export async function GET() {
     { error: 'Method not allowed. Webhooks use POST.' },
     { status: 405 }
   );
+}
+
+// ============================================================================
+// Email dispatch helper
+// ============================================================================
+
+/**
+ * Query all tickets for the order, render the PDF + email, send via Resend,
+ * and stamp the tickets with email_sent_at + resend_email_id.
+ *
+ * Returns true if the email was sent successfully. Throws on transient
+ * failures so the caller can capture them in the response errors list.
+ */
+async function dispatchTicketEmail(args: {
+  shopifyOrderId: string;
+  buyerEmail: string;
+  buyerFirstName: string;
+}): Promise<boolean> {
+  const tickets = await getTicketsByOrderId(args.shopifyOrderId);
+  if (tickets.length === 0) return false;
+
+  // Pre-generate QR data URLs for inline embedding in the email HTML.
+  const qrDataUrls = await Promise.all(
+    tickets.map((t) => generateQRDataUrl(t.token, { size: 480, margin: 1 })),
+  );
+
+  // Email payload
+  const emailTickets = tickets.map((t, i) => ({
+    token: t.token,
+    ticket_type: t.ticket_type,
+    event: t.event,
+    holder_name: t.holder_name,
+    team_slug: t.team_slug,
+    jersey_size: t.jersey_size,
+    shorts_size: t.shorts_size,
+    age_group: t.age_group,
+    guardian_name: t.guardian_name,
+    qrDataUrl: qrDataUrls[i],
+  }));
+
+  const { subject, html, text } = renderTicketEmail(
+    {
+      buyer_first_name: args.buyerFirstName,
+      shopify_order_number: tickets[0]?.shopify_order_number ?? null,
+    },
+    emailTickets,
+  );
+
+  // PDF payload (same data shape, different consumer)
+  const pdfBuffer = await generateTicketPDF(
+    tickets.map((t: TicketRow) => ({
+      token: t.token,
+      shopify_order_number: t.shopify_order_number,
+      ticket_type: t.ticket_type,
+      event: t.event,
+      holder_name: t.holder_name,
+      team_slug: t.team_slug,
+      jersey_size: t.jersey_size,
+      shorts_size: t.shorts_size,
+      age_group: t.age_group,
+      guardian_name: t.guardian_name,
+    })),
+  );
+
+  const { id: resendEmailId } = await sendEmail({
+    to: args.buyerEmail,
+    subject,
+    html,
+    text,
+    attachments: [
+      {
+        filename: 'phamily-classic-tickets.pdf',
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      },
+    ],
+  });
+
+  await markTicketsEmailSent(
+    tickets.map((t) => t.id),
+    resendEmailId,
+  );
+
+  return true;
 }

@@ -1,10 +1,17 @@
 import { Resend } from 'resend';
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
 interface SendEmailParams {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: EmailAttachment[];
 }
 
 /**
@@ -23,6 +30,7 @@ export async function sendEmail({
   subject,
   html,
   text,
+  attachments,
 }: SendEmailParams): Promise<{ id: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
@@ -41,6 +49,11 @@ export async function sendEmail({
     subject,
     html,
     text,
+    attachments: attachments?.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    })),
   });
 
   if (result.error) {
