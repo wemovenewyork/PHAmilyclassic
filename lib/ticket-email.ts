@@ -51,11 +51,14 @@ interface RenderedEmail {
   text: string;
 }
 
+// Customer-facing ticket label. Drives off the `event` column so the data
+// model (`ticket_type` enum) stays unchanged but everyone sees the same
+// wording regardless of whether the ticket is team_registration / spectator
+// / comp — all main_event tickets are "Basketball Games."
 function ticketTypeLabel(t: TicketForEmail): string {
-  if (t.ticket_type === 'team_registration') return 'TEAM REGISTRATION';
-  if (t.ticket_type === 'after_party') return 'AFTER PARTY TICKET';
-  if (t.ticket_type === 'comp') return 'COMPLIMENTARY';
-  return t.event === 'after_party' ? 'AFTER PARTY TICKET' : 'MAIN EVENT TICKET';
+  return t.event === 'after_party'
+    ? 'PHAmily Classic — After Party'
+    : 'PHAmily Classic — Basketball Games';
 }
 
 function escapeHtml(s: string): string {
@@ -125,25 +128,9 @@ export function renderTicketEmail(
             </p>
           </td></tr>
 
-          <!-- Tickets -->
+          <!-- Tickets — each card now embeds its own per-type event details -->
           <tr><td style="padding:8px 24px;">
             ${ticketCards}
-          </td></tr>
-
-          <!-- Event details -->
-          <tr><td style="padding:16px 24px 0 24px;">
-            <h3 style="font-family:Helvetica,Arial,sans-serif;font-size:13px;letter-spacing:2px;color:${GOLD};margin:0 0 8px 0;text-transform:uppercase;">Event Details</h3>
-            <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:${TEXT};margin:0;">
-              <strong>Date:</strong> Saturday, August 29, 2026<br>
-              <strong>Main event:</strong> 1:00 PM – 7:00 PM<br>
-              <strong>Location:</strong> Riverbank State Park, Harlem, NY<br>
-              <a href="https://maps.google.com/?q=679+Riverside+Dr+New+York+NY+10031" style="color:${NAVY};text-decoration:underline;">Open in Google Maps</a>
-            </p>
-            <p style="font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:${TEXT};margin:14px 0 0 0;">
-              <strong>After party:</strong> 9:00 PM onwards<br>
-              <strong>Location:</strong> Most Worshipful Prince Hall Grand Lodge of New York<br>
-              454 W. 155th Street, New York, NY 10032
-            </p>
           </td></tr>
 
           ${uniformBlock}
@@ -177,7 +164,7 @@ export function renderTicketEmail(
               MW Darren M. Morton, Ed.D — Grand Master
             </div>
             <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:rgba(255,255,255,0.4);margin-top:14px;">
-              &copy; 2026 Adelphic Union Lodge No. 14, F. &amp; A.M., State of New York
+              &copy; 2026 Adelphic Union Lodge No. 14, MWPHGLNY
             </div>
           </td></tr>
         </table>
@@ -217,13 +204,40 @@ function renderTicketCardHTML(
          </div>`
       : '';
 
+  // Per-type event details (replaces the old single global "Event Details"
+  // section at the bottom of the email — now each card carries its own).
+  const eventBlock =
+    t.event === 'after_party'
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f8f9fb;border-top:1px solid ${BORDER};border-bottom:1px solid ${BORDER};">
+           <tr><td style="padding:14px 18px;text-align:center;font-family:Helvetica,Arial,sans-serif;color:${TEXT};">
+             <div style="font-size:13px;font-weight:700;">Saturday, August 29, 2026</div>
+             <div style="font-size:14px;font-weight:700;margin-top:8px;">Doors &middot; 9:00 PM</div>
+             <div style="font-size:13px;margin-top:6px;">Most Worshipful Prince Hall Grand Lodge of New York</div>
+             <div style="font-size:12px;color:${MUTED};margin-top:2px;">454 W 155th St, New York, NY 10032</div>
+           </td></tr>
+         </table>`
+      : `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f8f9fb;border-top:1px solid ${BORDER};border-bottom:1px solid ${BORDER};">
+           <tr><td style="padding:14px 18px;text-align:center;font-family:Helvetica,Arial,sans-serif;color:${TEXT};">
+             <div style="font-size:13px;font-weight:700;">Saturday, August 29, 2026</div>
+             <div style="font-size:12px;color:${MUTED};margin-top:2px;">Riverbank State Park, NYC</div>
+             <div style="font-size:14px;font-weight:700;margin-top:10px;">Gymnasium Doors Open &middot; 3:00 PM</div>
+             <div style="font-size:14px;font-weight:700;margin-top:2px;">Games Run &middot; 4:00 PM – 7:00 PM</div>
+             <div style="font-size:12px;color:${MUTED};margin-top:10px;line-height:1.5;">
+               After your ticket is scanned at gymnasium entry, you'll receive a wristband for re-entry.
+             </div>
+             <div style="font-size:12px;color:${MUTED};font-style:italic;margin-top:10px;line-height:1.5;">
+               OES Invitational Kickball &mdash; 1:00 PM, outdoors at Riverbank State Park
+             </div>
+           </td></tr>
+         </table>`;
+
   return `
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BORDER};border-radius:6px;margin:12px 0;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ${BORDER};border-radius:6px;margin:12px 0;overflow:hidden;">
     <tr><td style="padding:18px 18px 0 18px;text-align:center;">
       <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:${MUTED};letter-spacing:2px;text-transform:uppercase;">
         Ticket ${index} of ${total}
       </div>
-      <div style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:${GOLD};font-weight:700;letter-spacing:3px;margin-top:8px;text-transform:uppercase;">
+      <div style="font-family:Helvetica,Arial,sans-serif;font-size:13px;color:${GOLD};font-weight:700;letter-spacing:2px;margin-top:8px;">
         ${ticketTypeLabel(t)}
       </div>
       <div style="font-family:Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;color:${TEXT};margin-top:6px;">
@@ -236,9 +250,12 @@ function renderTicketCardHTML(
         Show This At The Gate
       </div>
     </td></tr>
+    <tr><td style="padding:0;">
+      ${eventBlock}
+    </td></tr>
     ${
       teamLine || sizesLine
-        ? `<tr><td style="padding:0 18px 12px 18px;text-align:center;">
+        ? `<tr><td style="padding:14px 18px 0 18px;text-align:center;">
              <p style="font-family:Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:${TEXT};margin:0;">
                ${teamLine}${sizesLine}
              </p>
@@ -247,10 +264,10 @@ function renderTicketCardHTML(
     }
     ${
       guardianBlock
-        ? `<tr><td style="padding:0 18px 12px 18px;">${guardianBlock}</td></tr>`
+        ? `<tr><td style="padding:12px 18px 0 18px;">${guardianBlock}</td></tr>`
         : ''
     }
-    <tr><td style="padding:0 18px 18px 18px;text-align:center;">
+    <tr><td style="padding:14px 18px 18px 18px;text-align:center;">
       <a href="${SITE_URL}/ticket/${encodeURIComponent(t.token)}" style="font-family:Helvetica,Arial,sans-serif;font-size:12px;color:${NAVY};text-decoration:underline;">
         View ticket online &rarr;
       </a>
@@ -269,11 +286,40 @@ function renderText(order: OrderContext, tickets: TicketForEmail[]): string {
         ticketTypeLabel(t),
         t.holder_name,
         '',
-        `View ticket: ${SITE_URL}/ticket/${t.token}`,
       ];
+
+      // Per-type event details (no global event block at the bottom anymore)
+      if (t.event === 'after_party') {
+        lines.push('Saturday, August 29, 2026');
+        lines.push('Doors · 9:00 PM');
+        lines.push('Most Worshipful Prince Hall Grand Lodge of New York');
+        lines.push('454 W 155th St, New York, NY 10032');
+      } else {
+        lines.push('Saturday, August 29, 2026');
+        lines.push('Riverbank State Park, NYC');
+        lines.push('');
+        lines.push('Gymnasium Doors Open · 3:00 PM');
+        lines.push('Games Run · 4:00 PM – 7:00 PM');
+        lines.push('');
+        lines.push(
+          "After your ticket is scanned at gymnasium entry, you'll receive a",
+        );
+        lines.push('wristband for re-entry.');
+        lines.push('');
+        lines.push(
+          'OES Invitational Kickball — 1:00 PM, outdoors at Riverbank State Park',
+        );
+      }
+
+      lines.push('');
+      lines.push(`View ticket: ${SITE_URL}/ticket/${t.token}`);
+
       if (t.team_slug) {
         const team = getTeamBySlug(t.team_slug);
-        if (team) lines.push(`Team: ${team.name}`);
+        if (team) {
+          lines.push('');
+          lines.push(`Team: ${team.name}`);
+        }
       }
       if (t.jersey_size) lines.push(`Jersey size: ${t.jersey_size}`);
       if (t.shorts_size) lines.push(`Shorts size: ${t.shorts_size}`);
@@ -295,16 +341,6 @@ Here are your tickets for the inaugural Interstate PHAmily Classic. We'll see
 you on August 29.
 
 ${ticketBlocks}
-
-EVENT DETAILS
-Date: Saturday, August 29, 2026
-Main event: 1:00 PM – 7:00 PM
-Location: Riverbank State Park, Harlem, NY
-Map: https://maps.google.com/?q=679+Riverside+Dr+New+York+NY+10031
-
-After party: 9:00 PM onwards
-Location: Most Worshipful Prince Hall Grand Lodge of New York
-454 W. 155th Street, New York, NY 10032
 ${
   hasTeamReg
     ? `\nUNIFORM PICKUP\nYour jersey and shorts will be available for pickup 1 hour before the event at\nRiverbank State Park. Valid ID required. Youth registrants: parent or guardian\nmust be present.\n`
@@ -319,6 +355,6 @@ Reply to this email or write to whencecameyouniversity@gmail.com.
 
 PHAmily Classic — Hosted by Adelphic Union Lodge No. 14
 MW Darren M. Morton, Ed.D — Grand Master
-(c) 2026 Adelphic Union Lodge No. 14, F. & A.M., State of New York
+(c) 2026 Adelphic Union Lodge No. 14, MWPHGLNY
 `;
 }

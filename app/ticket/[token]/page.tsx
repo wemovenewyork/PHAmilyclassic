@@ -41,16 +41,13 @@ export default async function TicketPage({ params }: Props) {
   const qrDataUrl = await generateQRDataUrl(ticket.token, { size: 640, margin: 1 });
   const team = ticket.team_slug ? getTeamBySlug(ticket.team_slug) : null;
 
+  // Customer-facing label drives off `event` so all main_event tickets read
+  // the same regardless of internal ticket_type (team_registration, spectator,
+  // comp). Data model unchanged — display only.
   const ticketTypeLabel =
-    ticket.ticket_type === 'team_registration'
-      ? 'TEAM REGISTRATION'
-      : ticket.ticket_type === 'after_party'
-      ? 'AFTER PARTY TICKET'
-      : ticket.ticket_type === 'comp'
-      ? 'COMPLIMENTARY'
-      : ticket.event === 'after_party'
-      ? 'AFTER PARTY TICKET'
-      : 'MAIN EVENT TICKET';
+    ticket.event === 'after_party'
+      ? 'PHAmily Classic — After Party'
+      : 'PHAmily Classic — Basketball Games';
 
   const statusBadge = renderStatusBadge(ticket);
 
@@ -210,37 +207,64 @@ export default async function TicketPage({ params }: Props) {
           </section>
         )}
 
-        {/* Event details */}
+        {/* Event details — per ticket type */}
         <section
           style={{
             marginTop: 16,
+            padding: '14px 16px',
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: 8,
             fontSize: 13,
             lineHeight: 1.65,
-            color: 'rgba(255,255,255,0.8)',
+            color: 'rgba(255,255,255,0.85)',
+            textAlign: 'center',
           }}
         >
           {ticket.event === 'after_party' ? (
             <>
-              <div>
-                <strong style={{ color: GOLD }}>After party:</strong> 9:00 PM
-                onwards
+              <div style={{ fontWeight: 700 }}>Saturday, August 29, 2026</div>
+              <div style={{ fontWeight: 700, marginTop: 10, fontSize: 14 }}>
+                <span style={{ color: GOLD }}>Doors</span> · 9:00 PM
               </div>
-              <div>
-                MW Prince Hall Grand Lodge of New York
-                <br />
-                454 W. 155th Street, New York, NY 10032
+              <div style={{ marginTop: 6 }}>
+                Most Worshipful Prince Hall Grand Lodge of New York
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                454 W 155th St, New York, NY 10032
               </div>
             </>
           ) : (
             <>
-              <div>
-                <strong style={{ color: GOLD }}>Main event:</strong> 1:00 PM –
-                7:00 PM
+              <div style={{ fontWeight: 700 }}>Saturday, August 29, 2026</div>
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>
+                Riverbank State Park, NYC
               </div>
-              <div>
-                Riverbank State Park
-                <br />
-                679 Riverside Drive, New York, NY 10031
+              <div style={{ fontWeight: 700, marginTop: 10, fontSize: 14 }}>
+                <span style={{ color: GOLD }}>Gymnasium Doors Open</span> · 3:00 PM
+              </div>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>
+                <span style={{ color: GOLD }}>Games Run</span> · 4:00 PM – 7:00 PM
+              </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.7)',
+                }}
+              >
+                After your ticket is scanned at gymnasium entry, you&apos;ll
+                receive a wristband for re-entry.
+              </div>
+              <div
+                style={{
+                  marginTop: 10,
+                  fontSize: 12,
+                  fontStyle: 'italic',
+                  color: 'rgba(255,255,255,0.55)',
+                }}
+              >
+                OES Invitational Kickball — 1:00 PM, outdoors at Riverbank
+                State Park
               </div>
             </>
           )}
