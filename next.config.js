@@ -11,6 +11,18 @@ const nextConfig = {
       { source: '/privacy', destination: '/privacy.html' },
     ];
   },
+  // pdfkit reads its built-in .afm font metric files from
+  // node_modules/pdfkit/js/data/ at runtime via fs.readFileSync. Next.js's
+  // tracer can't detect that dynamic read, so the files are normally NOT
+  // copied into the deployed Lambda — every ticket-generating webhook hits
+  // ENOENT inside dispatchTicketEmail(). Explicitly include them.
+  // (Next 14 puts this under experimental; Next 15 will promote it to
+  // top-level.)
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/shopify-webhook': ['./node_modules/pdfkit/js/data/**/*'],
+    },
+  },
 };
 
 module.exports = nextConfig;
