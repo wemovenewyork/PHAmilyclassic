@@ -144,7 +144,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 
 /* ===== TICKER ===== */
 .ticker{background:var(--red);padding:14px 0;overflow:hidden;position:relative;}
-.ticker-track{display:flex;gap:60px;animation:tickerScroll 30s linear infinite;white-space:nowrap;}
+.ticker-track{display:flex;gap:60px;animation:tickerScroll 18s linear infinite;white-space:nowrap;}
 .ticker-item{font-family:'Oswald',sans-serif;font-weight:600;font-size:.95rem;letter-spacing:3px;text-transform:uppercase;color:var(--white);flex-shrink:0;display:flex;align-items:center;gap:16px;}
 .ticker-dot{width:8px;height:8px;background:var(--gold);border-radius:50%;}
 
@@ -158,9 +158,9 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .about{background:var(--deep-blue);position:relative;overflow:hidden;}
 .about::before{content:'';position:absolute;top:-200px;right:-200px;width:500px;height:500px;background:radial-gradient(circle,rgba(245,197,24,.06),transparent 70%);pointer-events:none;}
 .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;max-width:1200px;margin:0 auto;align-items:center;}
-.about-image{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/3;background:var(--navy);}
-.about-image-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:transparent;padding:40px;}
-.flyer-rotator{position:relative;width:100%;height:100%;min-height:300px;}
+.about-image{position:relative;}
+.about-image-inner{width:100%;display:flex;align-items:center;justify-content:center;}
+.flyer-rotator{position:relative;width:100%;max-width:min(720px,94vw);margin:0 auto;aspect-ratio:3/4;}
 .flyer-rotator-img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;object-position:center;opacity:0;transition:opacity 1.2s ease-in-out;will-change:opacity;}
 .flyer-rotator-img.flyer-rotator-active{opacity:1;}
 @media(prefers-reduced-motion:reduce){.flyer-rotator-img{transition:opacity 0s;}}
@@ -276,8 +276,11 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .afterparty-badge{display:inline-block;padding:8px 24px;border:1px solid var(--gold);border-radius:30px;font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.85rem;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:24px;}
 .afterparty-address{font-family:'Barlow',sans-serif;font-weight:400;font-size:1.1rem;color:var(--light-gray);margin-top:16px;line-height:1.6;}
 .afterparty-venue{font-family:'Oswald',sans-serif;font-weight:600;font-size:1.2rem;color:var(--gold);margin-top:8px;}
-.afterparty-logo{display:block;margin:0 auto 24px;max-width:min(380px,80vw);width:100%;height:auto;}
-@media(max-width:600px){.afterparty-logo{max-width:min(280px,70vw);margin-bottom:16px;}}
+.afterparty-logo{display:block;margin:0 auto 24px;max-width:min(480px,88vw);width:100%;height:auto;}
+.afterparty-cta{display:inline-block;margin-top:32px;padding:14px 36px;background:linear-gradient(135deg,var(--bright-gold) 0%,var(--gold) 100%);color:var(--navy);font-family:'Oswald',sans-serif;font-weight:700;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border-radius:4px;box-shadow:0 4px 16px rgba(245,197,24,.3);transition:transform .2s ease,box-shadow .2s ease;}
+.afterparty-cta:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(245,197,24,.45);}
+.afterparty-cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+@media(max-width:600px){.afterparty-logo{max-width:min(360px,80vw);margin-bottom:16px;}}
 
 /* ===== FAQ ===== */
 .faq{background:var(--deep-blue);position:relative;}
@@ -450,10 +453,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .challenge-team-name--gold{color:var(--gold);}
 .challenge-team-name--white{color:var(--white);}
 .challenge-versus-text{font-family:'Oswald',sans-serif;font-weight:400;font-size:28px;letter-spacing:4px;color:var(--white);text-transform:uppercase;}
-.challenge-vs-badge{width:100px;height:100px;border-radius:50%;background:var(--navy);border:4px solid var(--gold);display:flex;align-items:center;justify-content:center;animation:challenge-vs-pulse 2s ease-in-out infinite;}
-.challenge-vs-badge span{font-family:'Oswald',sans-serif;font-weight:700;font-size:48px;line-height:1;animation:challenge-vs-color 3s linear infinite;}
-@keyframes challenge-vs-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
-@keyframes challenge-vs-color{0%,100%{color:var(--gold);}50%{color:var(--red);}}
+.challenge-flyer-feature{display:block;width:100%;max-width:min(640px,92vw);margin:0 auto;height:auto;}
 .challenge-copy{max-width:720px;display:flex;flex-direction:column;gap:14px;}
 .challenge-copy-line-bold{font-family:'Oswald',sans-serif;font-weight:700;font-size:24px;letter-spacing:1px;text-transform:uppercase;color:var(--gold);line-height:1.2;}
 .challenge-copy-line-body{font-family:'Barlow',sans-serif;font-weight:400;font-size:18px;color:#cbd5e1;line-height:1.5;}
@@ -482,9 +482,6 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   .challenge-ctas{flex-direction:row;justify-content:center;gap:24px;align-items:stretch;}
   .challenge-cta{width:320px;}
   .challenge-cta-label{font-size:18px;}
-}
-@media(prefers-reduced-motion:reduce){
-  .challenge-vs-badge,.challenge-vs-badge span{animation:none;}
 }
 
 /* ===== PLEDGE MODAL ===== */
@@ -602,7 +599,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
       <div class="challenge-team-name challenge-team-name--white">NEW JERSEY</div>
     </div>
 
-    <div class="challenge-vs-badge" aria-hidden="true"><span>VS</span></div>
+    <img src="/flyer-challenge.jpg" alt="Interstate PHAmily Classic — NEW JERSEY: We Challenge You" class="challenge-flyer-feature" loading="lazy" decoding="async" />
 
     <div class="challenge-copy">
       <p class="challenge-copy-line-bold">LET&rsquo;S SEE WHO REALLY GOT THE BEST SQUAD.</p>
@@ -826,7 +823,7 @@ if (supabase) {
     <div class="reveal">
       <div class="section-label">About the Classic</div>
       <h2 class="section-title" id="about-title">A Celebration of Community, Fellowship & Jurisdictional Pride</h2>
-      <p class="section-desc">Adelphic Union Lodge #14 is proud to host the inaugural Interstate PHAmily Classic — a landmark event dedicated to community outreach, fellowship, and family fun. This isn't just a sports tournament; it's a holistic community festival celebrating the bonds that make NYC and its surrounding jurisdictions a premier place to live, work, and raise a family.</p>
+      <p class="section-desc">Adelphic Union Lodge #14 is proud to host the inaugural Interstate PHAmily Classic — a landmark event dedicated to community outreach and Masonic Fellowship. This isn't just a sports tournament; it's a holistic community festival celebrating the bonds that make NYC and its surrounding jurisdictions a premier place to live, work, and raise a family.</p>
       <div class="about-stats">
         <div class="stat"><div class="stat-num">3</div><div class="stat-label">Games</div></div>
         <div class="stat"><div class="stat-num">6.5</div><div class="stat-label">Hours</div></div>
@@ -838,6 +835,7 @@ if (supabase) {
         <div class="flyer-rotator" role="img" aria-label="Interstate PHAmily Classic event flyers">
           <img src="/flyer-challenge.jpg" alt="Interstate PHAmily Classic — NEW JERSEY: We Challenge You" class="flyer-rotator-img flyer-rotator-active" loading="eager" decoding="async" />
           <img src="/flyer-event.jpg" alt="Interstate PHAmily Classic — inaugural event details" class="flyer-rotator-img" loading="lazy" decoding="async" />
+          <img src="/after-party-logo.png" alt="Interstate After Party at the Grand East" class="flyer-rotator-img" loading="lazy" decoding="async" />
         </div>
       </div>
       <div class="about-accent"></div>
@@ -865,7 +863,7 @@ if (supabase) {
     </div>
     <div class="testimonials-grid">
       <div class="testimonial-card reveal">
-        <div class="testimonial-quote">This event is exactly what our community needs — a chance to come together, compete in good spirit, and show the world what the Prince Hall family is all about. I couldn't be more proud to be part of making this happen.</div>
+        <div class="testimonial-quote">This is what the Craft needs — a chance to come together, compete in good spirit, and show the world what the Prince Hall family is all about. I couldn't be more proud to be part of making this happen.</div>
         <div class="testimonial-author">
           <div class="testimonial-avatar av-gold">WM</div>
           <div><div class="testimonial-name">Worshipful Master</div><div class="testimonial-role">Adelphic Union Lodge #14, NY</div></div>
@@ -906,7 +904,7 @@ if (supabase) {
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">5:00 PM</div><div class="timeline-title">Live Cultural Stage Performances</div><div class="timeline-desc">Live music, DJ sets, and cultural performances celebrating the rich heritage of NYC and surrounding areas.</div></div>
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">5:30 PM</div><div class="timeline-title">NY vs NJ Basketball</div><div class="timeline-desc">The main event. New York vs New Jersey Masonic Jurisdiction basketball — high energy, high stakes, and bragging rights on the line for the inaugural Classic trophy.</div></div>
       <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">6:30 PM</div><div class="timeline-title">Awards & Closing Ceremony</div><div class="timeline-desc">Trophy presentation, MVP awards, and closing remarks.</div></div>
-      <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">7:00 PM</div><div class="timeline-title">Event Concludes — After Party</div><div class="timeline-desc">Head to the Most Worshipful Prince Hall Grand Lodge for the official after party!</div><img src="/after-party-logo.png" alt="" class="timeline-afterparty-badge" loading="lazy" decoding="async" aria-hidden="true" /></div>
+      <div class="timeline-item" role="listitem"><div class="timeline-dot"></div><div class="timeline-time">7:00 PM</div><div class="timeline-title">Event Concludes — After Party</div><div class="timeline-desc">Head to the Most Worshipful Prince Hall Grand Lodge of New York for the official after party!</div><img src="/after-party-logo.png" alt="" class="timeline-afterparty-badge" loading="lazy" decoding="async" aria-hidden="true" /></div>
     </div>
   </div>
 </section>
@@ -1036,9 +1034,10 @@ if (supabase) {
     <div class="afterparty-badge">Official After Party</div>
     <h2 class="section-title" id="afterparty-title" style="text-align:center;">The Celebration Continues</h2>
     <p class="section-desc" style="max-width:100%;text-align:center;margin:0 auto;">After the final whistle, the PHAmily keeps the energy going at the official after party. Join us for an evening of music, fellowship, and celebration.</p>
-    <div class="afterparty-venue">Most Worshipful Prince Hall Grand Lodge</div>
+    <div class="afterparty-venue">Most Worshipful Prince Hall Grand Lodge of New York</div>
     <p class="afterparty-address">454 W. 155th Street, New York, NY</p>
     <div style="margin-top:28px;"><a href="https://maps.google.com/?q=454+W+155th+St+New+York+NY" target="_blank" rel="noopener" class="btn-secondary" style="font-size:1rem;padding:14px 32px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg> Get Directions</a></div>
+    <a href="https://whencecameyouniversity.com/products/phamily-classic-after-party-ticket" class="afterparty-cta" target="_blank" rel="noopener noreferrer">Get Tickets</a>
   </div>
 </section>
 
@@ -1310,7 +1309,7 @@ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
   if(imgs.length<2) return;
 
   let active=0;
-  const INTERVAL_MS=8000;
+  const INTERVAL_MS=15000;
 
   function swap(){
     imgs[active].classList.remove('flyer-rotator-active');
