@@ -123,6 +123,18 @@ export const AFTER_PARTY_TICKET = {
   price: 25,
 } as const;
 
+/**
+ * The PHAmily Classic combo product — bundles one main-event spectator
+ * ticket and one after-party ticket. Per quantity unit purchased, the
+ * webhook generates TWO ticket rows: one spectator (main_event) and
+ * one after_party.
+ */
+export const COMBO_TICKET = {
+  shopifyProductGid: 'gid://shopify/Product/10441917759669',
+  shopifyProductId: '10441917759669',
+  price: 40,
+} as const;
+
 /** Hard registration deadline. Past this, /register redirects to /register/closed. */
 export const REGISTRATION_DEADLINE_ISO = '2026-07-13T03:59:59Z'; // July 12, 11:59:59 PM ET
 export const REGISTRATION_DEADLINE_DISPLAY = 'July 12, 2026';

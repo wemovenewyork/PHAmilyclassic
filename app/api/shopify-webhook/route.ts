@@ -17,6 +17,7 @@ import { confirmVendor } from '@/lib/db-vendors';
 import { confirmDonationByShopifyOrder } from '@/lib/db-donations';
 import {
   AFTER_PARTY_TICKET,
+  COMBO_TICKET,
   SPECTATOR_TICKET,
   TEAMS,
   getTeamBySlug,
@@ -155,6 +156,7 @@ function getBuyerEmail(order: ShopifyOrder): string {
 const TEAM_PRODUCT_IDS = new Set(TEAMS.map((t) => t.shopifyProductId));
 const SPECTATOR_PRODUCT_ID = SPECTATOR_TICKET.shopifyProductId;
 const AFTER_PARTY_PRODUCT_ID = AFTER_PARTY_TICKET.shopifyProductId;
+const COMBO_PRODUCT_ID = COMBO_TICKET.shopifyProductId;
 const VENDOR_PRODUCT_ID = '10440053784757';
 
 // ============================================================================
@@ -375,6 +377,44 @@ export async function POST(req: Request) {
         }
       } else {
         errors.push(`vendor-product-no-vendor-id: line ${line.id}`);
+      }
+    }
+    // ---- Combo product (1 spectator main_event + 1 after_party per qty) ----
+    else if (productId === COMBO_PRODUCT_ID) {
+      for (let q = 0; q < line.quantity; q++) {
+        const spectatorTicket = await createTicket({
+          token: generateTicketToken(),
+          shopify_order_id: String(order.id),
+          shopify_order_number: order.name,
+          shopify_line_item_id: lineItemId,
+          ticket_type: 'spectator',
+          event: 'main_event',
+          holder_name: buyerName,
+          holder_email: buyerEmail,
+        });
+        if (spectatorTicket.ok) {
+          createdTicketIds.push(spectatorTicket.ticketId);
+          spectatorTicketsCreated++;
+        } else {
+          errors.push(`create-combo-spectator: ${spectatorTicket.error}`);
+        }
+
+        const afterPartyTicket = await createTicket({
+          token: generateTicketToken(),
+          shopify_order_id: String(order.id),
+          shopify_order_number: order.name,
+          shopify_line_item_id: lineItemId,
+          ticket_type: 'after_party',
+          event: 'after_party',
+          holder_name: buyerName,
+          holder_email: buyerEmail,
+        });
+        if (afterPartyTicket.ok) {
+          createdTicketIds.push(afterPartyTicket.ticketId);
+          afterPartyTicketsCreated++;
+        } else {
+          errors.push(`create-combo-after-party: ${afterPartyTicket.error}`);
+        }
       }
     }
     // ---- After-party ticket product ----
