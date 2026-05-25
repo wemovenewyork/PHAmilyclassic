@@ -4,6 +4,15 @@ export interface EmailAttachment {
   filename: string;
   content: Buffer;
   contentType?: string;
+  /**
+   * Optional Content-ID. When set, the attachment is sent as an inline
+   * resource that can be referenced from the email HTML via `cid:<id>`
+   * instead of a `data:` URI. Inline attachments are treated more leniently
+   * by Gmail and other mail clients than base64 data URIs from unknown
+   * senders, so this is the preferred way to embed images in transactional
+   * mail.
+   */
+  contentId?: string;
 }
 
 interface SendEmailParams {
@@ -53,6 +62,7 @@ export async function sendEmail({
       filename: a.filename,
       content: a.content,
       contentType: a.contentType,
+      contentId: a.contentId,
     })),
   });
 

@@ -36,8 +36,8 @@ export interface TicketForEmail {
   shorts_size: string | null;
   age_group: 'adult' | 'youth' | null;
   guardian_name: string | null;
-  /** Pre-generated data URL ("data:image/png;base64,...") for inline embedding */
-  qrDataUrl: string;
+  /** Pre-generated PNG buffer of the QR code, embedded inline via cid: */
+  qrBuffer: Buffer;
 }
 
 export interface OrderContext {
@@ -45,10 +45,27 @@ export interface OrderContext {
   shopify_order_number: string | null;
 }
 
+interface InlineAttachment {
+  filename: string;
+  content: Buffer;
+  contentId: string;
+  contentType?: string;
+}
+
 interface RenderedEmail {
   subject: string;
   html: string;
   text: string;
+  inlineAttachments: InlineAttachment[];
+}
+
+/**
+ * Stable per-ticket Content-ID. Uses the first 12 chars of the token —
+ * unique within the email (32-byte token has astronomical collision
+ * resistance even truncated), short enough to keep MIME headers tidy.
+ */
+function ticketCid(token: string): string {
+  return `qr-${token.slice(0, 12)}`;
 }
 
 // Customer-facing ticket label. Drives off the `event` column so the data
@@ -117,8 +134,17 @@ export function renderTicketEmail(
             </div>
           </td></tr>
 
+          <!-- QR fallback banner — appears before any image content so it
+               renders even if the inline QR attachments are blocked -->
+          <tr><td style="padding:24px 24px 0 24px;">
+            <div style="background:#f5f0e0;border-left:4px solid ${GOLD};padding:12px 16px;font-family:Helvetica,Arial,sans-serif;font-size:14px;line-height:1.5;color:#333;">
+              <strong>Can't see your QR code below?</strong>
+              Tap &ldquo;View ticket online&rdquo; next to your ticket to see it full-size and saveable.
+            </div>
+          </td></tr>
+
           <!-- Greeting -->
-          <tr><td style="padding:32px 24px 8px 24px;">
+          <tr><td style="padding:24px 24px 8px 24px;">
             <h1 style="font-family:Helvetica,Arial,sans-serif;font-size:22px;font-weight:700;color:${TEXT};margin:0 0 12px 0;">
               You're in, ${escapeHtml(firstName)}.
             </h1>
@@ -177,7 +203,14 @@ export function renderTicketEmail(
   // ===== Plain text =====
   const text = renderText(order, tickets);
 
-  return { subject, html, text };
+  const inlineAttachments: InlineAttachment[] = tickets.map((t) => ({
+    filename: `qr-${t.token.slice(0, 12)}.png`,
+    content: t.qrBuffer,
+    contentId: ticketCid(t.token),
+    contentType: 'image/png',
+  }));
+
+  return { subject, html, text, inlineAttachments };
 }
 
 function renderTicketCardHTML(
@@ -245,7 +278,7 @@ function renderTicketCardHTML(
       </div>
     </td></tr>
     <tr><td style="padding:14px 18px;text-align:center;">
-      <img src="${t.qrDataUrl}" alt="Ticket QR code" width="240" height="240" style="display:block;margin:0 auto;width:240px;height:240px;">
+      <img src="cid:${ticketCid(t.token)}" alt="Ticket QR code" width="240" height="240" style="display:block;margin:0 auto;width:240px;height:240px;">
       <div style="font-family:Helvetica,Arial,sans-serif;font-size:11px;color:${MUTED};letter-spacing:2px;text-transform:uppercase;margin-top:10px;">
         Show This At The Gate
       </div>
@@ -334,6 +367,9 @@ function renderText(order: OrderContext, tickets: TicketForEmail[]): string {
 
   return `INTERSTATE PHAMILY CLASSIC
 August 29, 2026 · Riverbank State Park
+
+CAN'T SEE YOUR QR CODE? Each ticket below includes a "View ticket online"
+link — tap it to see your QR full-size.
 
 You're in, ${firstName}.
 
