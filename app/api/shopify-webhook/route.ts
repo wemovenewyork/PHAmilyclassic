@@ -23,7 +23,7 @@ import {
   getTeamBySlug,
 } from '@/lib/teams-config';
 import { generateTicketToken } from '@/lib/ticket-tokens';
-import { generateQRDataUrl } from '@/lib/qr';
+import { generateQRBuffer } from '@/lib/qr';
 import { generateTicketPDF } from '@/lib/ticket-pdf';
 import { renderTicketEmail } from '@/lib/ticket-email';
 import { sendEmail } from '@/lib/email';
@@ -606,9 +606,11 @@ async function dispatchTicketEmail(args: {
   const tickets = await getTicketsByOrderId(args.shopifyOrderId);
   if (tickets.length === 0) return false;
 
-  // Pre-generate QR data URLs for inline embedding in the email HTML.
-  const qrDataUrls = await Promise.all(
-    tickets.map((t) => generateQRDataUrl(t.token, { size: 480, margin: 1 })),
+  // Pre-generate QR PNG buffers — used both as inline cid: attachments in
+  // the email (more reliable than data: URIs against Gmail desktop) and
+  // for the PDF generator below.
+  const qrBuffers = await Promise.all(
+    tickets.map((t) => generateQRBuffer(t.token, { size: 480, margin: 1 })),
   );
 
   // Email payload
@@ -622,10 +624,10 @@ async function dispatchTicketEmail(args: {
     shorts_size: t.shorts_size,
     age_group: t.age_group,
     guardian_name: t.guardian_name,
-    qrDataUrl: qrDataUrls[i],
+    qrBuffer: qrBuffers[i],
   }));
 
-  const { subject, html, text } = renderTicketEmail(
+  const { subject, html, text, inlineAttachments } = renderTicketEmail(
     {
       buyer_first_name: args.buyerFirstName,
       shopify_order_number: tickets[0]?.shopify_order_number ?? null,
@@ -654,7 +656,10 @@ async function dispatchTicketEmail(args: {
     subject,
     html,
     text,
+    // Inline QR attachments first (referenced via cid: from the HTML),
+    // PDF attachment after.
     attachments: [
+      ...inlineAttachments,
       {
         filename: 'phamily-classic-tickets.pdf',
         content: pdfBuffer,
