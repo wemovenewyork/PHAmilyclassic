@@ -60,6 +60,13 @@ export default function SiteFooter() {
           <a href="/#games">Games</a>
           <a href="/#community">Community</a>
           <a href="/#vendor">Vendor Opportunity</a>
+          <a
+            href="https://whencecameyouniversity.com/collections/phamily-classic-merch"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Shop Merch
+          </a>
           <a href="/#tickets">Tickets</a>
         </div>
 
