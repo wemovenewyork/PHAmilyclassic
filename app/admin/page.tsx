@@ -1,40 +1,28 @@
-import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import {
+  ADMIN_SESSION_COOKIE,
+  verifyAdminSessionJwt,
+} from '@/lib/admin-auth';
+import AdminDashboard from '@/components/admin/AdminDashboard';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'Admin Dashboard',
+  title: 'Admin Dashboard — PHAmily Classic',
   robots: { index: false, follow: false },
 };
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const jwt = cookies().get(ADMIN_SESSION_COOKIE)?.value;
+  const session = await verifyAdminSessionJwt(jwt);
+  if (!session) {
+    redirect('/admin/login?redirectTo=/admin');
+  }
   return (
-    <main style={{ minHeight: '100vh', padding: '100px 40px 60px' }}>
-      <div style={{ maxWidth: 800, margin: '0 auto' }}>
-        <p className="label">Admin</p>
-        <h1
-          className="display"
-          style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', marginBottom: 16, lineHeight: 1.1 }}
-        >
-          PHAmily Classic Dashboard
-        </h1>
-        <p style={{ color: 'var(--gray)', lineHeight: 1.7, marginBottom: 40 }}>
-          Admin dashboard coming in a later build phase. This will include the registrations
-          table, jersey number assignment, size breakdown reports per team, CSV export, and
-          check-in tooling.
-        </p>
-        <Link
-          href="/"
-          style={{
-            display: 'inline-block',
-            fontFamily: "'Barlow Condensed', sans-serif",
-            fontSize: '0.85rem',
-            letterSpacing: 2,
-            textTransform: 'uppercase',
-            color: 'var(--gray)',
-          }}
-        >
-          ← Back to event
-        </Link>
-      </div>
-    </main>
+    <AdminDashboard
+      adminEmail={session.email}
+      adminDisplayName={session.display_name}
+    />
   );
 }
