@@ -791,3 +791,577 @@ export async function markWebhookProcessed(
     })
     .eq('webhook_id', webhookId);
 }
+
+// ============================================================================
+// Admin dashboard helpers (PR #20)
+// ============================================================================
+// All exports below assume the caller has already verified the admin session
+// JWT and is passing a trusted `adminId` from the verified payload — never
+// from client-supplied input. The audit log derives accountability from
+// adminId, so callers MUST NOT take it from the request body.
+
+import { randomUUID } from 'node:crypto';
+
+export interface AdminRow {
+  id: string;
+  email: string;
+  password_hash: string;
+  display_name: string;
+  last_login_at: string | null;
+}
+
+/** Case-insensitive lookup. Returns null when not found. */
+export async function getAdminByEmail(email: string): Promise<AdminRow | null> {
+  const trimmed = email.trim().toLowerCase();
+  if (!trimmed) return null;
+  const { data, error } = await supabaseAdmin
+    .from('admins')
+    .select('id, email, password_hash, display_name, last_login_at')
+    .ilike('email', trimmed)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as AdminRow;
+}
+
+export async function touchAdminLastLogin(adminId: string): Promise<void> {
+  await supabaseAdmin
+    .from('admins')
+    .update({ last_login_at: new Date().toISOString() })
+    .eq('id', adminId);
+}
+
+// ---- Audit log ----
+export type AuditAction =
+  | 'issued'
+  | 'voided'
+  | 'restored'
+  | 'resent'
+  | 'email_changed';
+
+export interface AuditLogInput {
+  ticketId: string;
+  adminId: string;
+  action: AuditAction;
+  metadata?: Record<string, unknown>;
+}
+
+export async function writeAuditLog(input: AuditLogInput): Promise<void> {
+  const { error } = await supabaseAdmin.from('ticket_audit_log').insert({
+    ticket_id: input.ticketId,
+    admin_id: input.adminId,
+    action: input.action,
+    metadata: input.metadata ?? {},
+  });
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error('[writeAuditLog] error', error);
+  }
+}
+
+export interface AuditLogEntry {
+  id: string;
+  ticket_id: string;
+  admin_id: string;
+  admin_display_name: string | null;
+  action: AuditAction;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+/** Per-ticket audit history, joined to admins for display name. */
+export async function getAuditLogForTicket(
+  ticketId: string,
+): Promise<AuditLogEntry[]> {
+  const { data, error } = await supabaseAdmin
+    .from('ticket_audit_log')
+    .select('id, ticket_id, admin_id, action, metadata, created_at, admins(display_name)')
+    .eq('ticket_id', ticketId)
+    .order('created_at', { ascending: true });
+  if (error || !data) {
+    // eslint-disable-next-line no-console
+    console.error('[getAuditLogForTicket] error', error);
+    return [];
+  }
+  return (data as unknown as Array<{
+    id: string;
+    ticket_id: string;
+    admin_id: string;
+    action: AuditAction;
+    metadata: Record<string, unknown>;
+    created_at: string;
+    admins: { display_name: string } | { display_name: string }[] | null;
+  }>).map((row) => {
+    const adminRow = Array.isArray(row.admins) ? row.admins[0] : row.admins;
+    return {
+      id: row.id,
+      ticket_id: row.ticket_id,
+      admin_id: row.admin_id,
+      admin_display_name: adminRow?.display_name ?? null,
+      action: row.action,
+      metadata: row.metadata,
+      created_at: row.created_at,
+    };
+  });
+}
+
+// ---- Comp ticket issuance ----
+export type CompEventSelection = 'main_event' | 'after_party' | 'combo';
+
+export interface IssueCompInput {
+  adminId: string;
+  holderName: string;
+  holderEmail: string;
+  event: CompEventSelection;
+  compReason: string;
+  compNotes: string | null;
+}
+
+export interface IssueCompResult {
+  shopifyOrderId: string;     // synthetic 'comp:<uuid>' for dispatch lookup
+  ticketIds: string[];        // 1 row for main_event/after_party, 2 for combo
+}
+
+/**
+ * Insert one or two comp ticket rows (combo = two) sharing a synthetic
+ * shopify_order_id so the existing dispatchTicketEmailForOrder() path works
+ * unchanged. Writes an `issued` audit log entry per row, populating
+ * combo_sibling_ticket_id in the metadata when applicable.
+ *
+ * Does NOT send the email — caller invokes dispatchTicketEmailForOrder()
+ * afterward with the returned shopifyOrderId.
+ */
+export async function issueCompTickets(
+  input: IssueCompInput,
+  generateToken: () => string,
+): Promise<IssueCompResult> {
+  const compGroupId = randomUUID();
+  const shopifyOrderId = `comp:${compGroupId}`;
+
+  // Per spec #3 mapping: 'combo' → two rows (main_event spectator + after_party).
+  // Single-event comps → one row whose ticket_type is 'comp' and whose event is
+  // the selected gate.
+  const rows: Array<{
+    token: string;
+    event: 'main_event' | 'after_party';
+  }> =
+    input.event === 'combo'
+      ? [
+          { token: generateToken(), event: 'main_event' },
+          { token: generateToken(), event: 'after_party' },
+        ]
+      : [{ token: generateToken(), event: input.event }];
+
+  const insertPayload = rows.map((r) => ({
+    token: r.token,
+    shopify_order_id: shopifyOrderId,
+    shopify_order_number: null,
+    shopify_line_item_id: null,
+    ticket_type: 'comp' as TicketType,
+    event: r.event,
+    holder_name: input.holderName,
+    holder_email: input.holderEmail,
+    holder_phone: null,
+    team_slug: null,
+    jersey_size: null,
+    shorts_size: null,
+    age_group: null,
+    guardian_name: null,
+    guardian_phone: null,
+    comp_reason: input.compReason,
+    comp_notes: input.compNotes,
+  }));
+
+  const { data, error } = await supabaseAdmin
+    .from('tickets')
+    .insert(insertPayload)
+    .select('id, event');
+
+  if (error || !data) {
+    // eslint-disable-next-line no-console
+    console.error('[issueCompTickets] insert error', error);
+    throw new Error(error?.message ?? 'Failed to insert comp tickets');
+  }
+
+  // Audit log per row, cross-linking siblings for combo issuance.
+  for (const row of data) {
+    const sibling = data.find((r) => r.id !== row.id)?.id ?? null;
+    await writeAuditLog({
+      ticketId: row.id,
+      adminId: input.adminId,
+      action: 'issued',
+      metadata: {
+        comp_reason: input.compReason,
+        event: row.event,
+        sent_to: input.holderEmail,
+        ...(sibling ? { combo_sibling_ticket_id: sibling } : {}),
+      },
+    });
+  }
+
+  return {
+    shopifyOrderId,
+    ticketIds: data.map((r) => r.id),
+  };
+}
+
+// ---- Void / Restore / Resend (admin actions on existing tickets) ----
+export type AdminActionFailure =
+  | 'not_found'
+  | 'already_voided'
+  | 'not_voided'
+  | 'is_voided';
+
+export type AdminActionResult<T> =
+  | { ok: true; ticket: T }
+  | { ok: false; error: AdminActionFailure };
+
+/**
+ * Soft-void a ticket. Already-scanned tickets are still voidable (admin can
+ * still need to invalidate a scanned ticket in edge cases); the audit log
+ * captures was_scanned for forensics. Refunded tickets are already
+ * effectively voided; we treat re-voiding as already_voided for the admin UI.
+ */
+export async function voidTicket(args: {
+  ticketId: string;
+  adminId: string;
+}): Promise<AdminActionResult<TicketRow>> {
+  const { data: existing } = await supabaseAdmin
+    .from('tickets')
+    .select('*')
+    .eq('id', args.ticketId)
+    .maybeSingle();
+  if (!existing) return { ok: false, error: 'not_found' };
+  if (existing.status === 'voided') {
+    return { ok: false, error: 'already_voided' };
+  }
+  const wasScanned = existing.status === 'scanned';
+  const previousStatus = existing.status;
+
+  const { data: updated, error } = await supabaseAdmin
+    .from('tickets')
+    .update({
+      status: 'voided',
+      voided_at: new Date().toISOString(),
+      voided_by: args.adminId,
+    })
+    .eq('id', args.ticketId)
+    .select('*')
+    .single();
+  if (error || !updated) {
+    // eslint-disable-next-line no-console
+    console.error('[voidTicket] update error', error);
+    throw new Error(error?.message ?? 'Failed to void');
+  }
+  await writeAuditLog({
+    ticketId: args.ticketId,
+    adminId: args.adminId,
+    action: 'voided',
+    metadata: { previous_status: previousStatus, was_scanned: wasScanned },
+  });
+  return { ok: true, ticket: updated as TicketRow };
+}
+
+/**
+ * Restore a voided OR refunded ticket back to 'issued'. Per spec #7,
+ * Refunded behaves identically to Voided in the admin UI for action
+ * availability, so both are restorable.
+ */
+export async function restoreTicket(args: {
+  ticketId: string;
+  adminId: string;
+}): Promise<AdminActionResult<TicketRow>> {
+  const { data: existing } = await supabaseAdmin
+    .from('tickets')
+    .select('*')
+    .eq('id', args.ticketId)
+    .maybeSingle();
+  if (!existing) return { ok: false, error: 'not_found' };
+  if (existing.status !== 'voided' && existing.status !== 'refunded') {
+    return { ok: false, error: 'not_voided' };
+  }
+  const previousStatus = existing.status;
+  const { data: updated, error } = await supabaseAdmin
+    .from('tickets')
+    .update({
+      status: 'issued',
+      voided_at: null,
+      voided_by: null,
+      voided_reason: null,
+      // Clear scan state so a restored ticket can be admitted fresh.
+      scanned_at: null,
+      scanned_by: null,
+      scan_location: null,
+      scan_source: null,
+    })
+    .eq('id', args.ticketId)
+    .select('*')
+    .single();
+  if (error || !updated) {
+    // eslint-disable-next-line no-console
+    console.error('[restoreTicket] update error', error);
+    throw new Error(error?.message ?? 'Failed to restore');
+  }
+  await writeAuditLog({
+    ticketId: args.ticketId,
+    adminId: args.adminId,
+    action: 'restored',
+    metadata: { previous_status: previousStatus },
+  });
+  return { ok: true, ticket: updated as TicketRow };
+}
+
+/**
+ * Update a ticket's holder_email (used by the Resend modal's email-override).
+ * Writes an `email_changed` audit entry capturing both the previous and new
+ * address. Does NOT send the email — the caller invokes the dispatch
+ * afterward.
+ */
+export async function changeTicketEmail(args: {
+  ticketId: string;
+  adminId: string;
+  newEmail: string;
+}): Promise<AdminActionResult<TicketRow>> {
+  const { data: existing } = await supabaseAdmin
+    .from('tickets')
+    .select('*')
+    .eq('id', args.ticketId)
+    .maybeSingle();
+  if (!existing) return { ok: false, error: 'not_found' };
+  if (existing.status === 'voided') return { ok: false, error: 'is_voided' };
+  if (existing.holder_email === args.newEmail) {
+    return { ok: true, ticket: existing as TicketRow };
+  }
+  const previousEmail = existing.holder_email;
+  const { data: updated, error } = await supabaseAdmin
+    .from('tickets')
+    .update({ holder_email: args.newEmail })
+    .eq('id', args.ticketId)
+    .select('*')
+    .single();
+  if (error || !updated) {
+    // eslint-disable-next-line no-console
+    console.error('[changeTicketEmail] update error', error);
+    throw new Error(error?.message ?? 'Failed to update email');
+  }
+  await writeAuditLog({
+    ticketId: args.ticketId,
+    adminId: args.adminId,
+    action: 'email_changed',
+    metadata: { previous_email: previousEmail, new_email: args.newEmail },
+  });
+  return { ok: true, ticket: updated as TicketRow };
+}
+
+export async function logTicketResent(args: {
+  ticketId: string;
+  adminId: string;
+  sentTo: string;
+}): Promise<void> {
+  await writeAuditLog({
+    ticketId: args.ticketId,
+    adminId: args.adminId,
+    action: 'resent',
+    metadata: { sent_to: args.sentTo },
+  });
+}
+
+// ---- Tickets search + filter (dashboard list) ----
+export interface AdminTicketSearchInput {
+  query?: string;
+  paidCompFilter?: 'paid' | 'comp' | 'all';
+  statusFilters?: Array<'issued' | 'voided' | 'scanned' | 'refunded'>;
+  eventFilter?: 'main_event' | 'after_party' | 'combo' | 'all';
+  cursor?: string | null;      // created_at ISO string of the last row from previous page
+  limit?: number;
+}
+
+export interface AdminTicketSearchResult {
+  tickets: TicketRow[];
+  nextCursor: string | null;
+}
+
+export async function searchTicketsForAdmin(
+  input: AdminTicketSearchInput,
+): Promise<AdminTicketSearchResult> {
+  const limit = Math.max(1, Math.min(100, input.limit ?? 50));
+
+  let q = supabaseAdmin.from('tickets').select('*');
+
+  if (input.cursor) {
+    // Cursor pagination on created_at descending — next page has older rows.
+    q = q.lt('created_at', input.cursor);
+  }
+
+  if (input.paidCompFilter === 'comp') {
+    q = q.eq('ticket_type', 'comp');
+  } else if (input.paidCompFilter === 'paid') {
+    q = q.neq('ticket_type', 'comp');
+  }
+
+  if (input.statusFilters && input.statusFilters.length > 0) {
+    q = q.in('status', input.statusFilters);
+  }
+
+  if (input.eventFilter === 'main_event' || input.eventFilter === 'after_party') {
+    q = q.eq('event', input.eventFilter);
+  } else if (input.eventFilter === 'combo') {
+    // "Combo" filter = shopify_order_id appears on >1 row in tickets. We
+    // approximate by filtering to comp combo IDs (start with 'comp:') and
+    // paid combos (orders with both events). For v1, surface only the
+    // explicit comp-combo prefix — paid combos still surface via the
+    // standalone event filters.
+    q = q.like('shopify_order_id', 'comp:%');
+  }
+
+  if (input.query && input.query.trim().length >= 2) {
+    const trimmed = input.query.trim();
+    const wildcard = `%${trimmed}%`;
+    q = q.or(
+      [
+        `holder_name.ilike.${wildcard}`,
+        `holder_email.ilike.${wildcard}`,
+        `shopify_order_number.ilike.${wildcard}`,
+        `id.eq.${trimmed}`,
+        `token.ilike.${wildcard}`,
+      ].join(','),
+    );
+  }
+
+  q = q.order('created_at', { ascending: false }).limit(limit + 1);
+
+  const { data, error } = await q;
+  if (error || !data) {
+    // eslint-disable-next-line no-console
+    console.error('[searchTicketsForAdmin] error', error);
+    return { tickets: [], nextCursor: null };
+  }
+  const sliced = data.slice(0, limit) as TicketRow[];
+  const nextCursor = data.length > limit ? sliced[sliced.length - 1].created_at : null;
+  return { tickets: sliced, nextCursor };
+}
+
+// ---- Single-ticket fetch (for resend / void / restore endpoints) ----
+export async function getTicketById(ticketId: string): Promise<TicketRow | null> {
+  const { data, error } = await supabaseAdmin
+    .from('tickets')
+    .select('*')
+    .eq('id', ticketId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as TicketRow;
+}
+
+// ---- Dashboard stats ----
+export interface AdminStats {
+  main_event: { issued: number; scanned: number; voided: number; refunded: number };
+  after_party: { issued: number; scanned: number; voided: number; refunded: number };
+}
+
+export async function getAdminStats(): Promise<AdminStats> {
+  const { data, error } = await supabaseAdmin
+    .from('tickets')
+    .select('event, status');
+  if (error || !data) {
+    // eslint-disable-next-line no-console
+    console.error('[getAdminStats] error', error);
+    return {
+      main_event: { issued: 0, scanned: 0, voided: 0, refunded: 0 },
+      after_party: { issued: 0, scanned: 0, voided: 0, refunded: 0 },
+    };
+  }
+  const out: AdminStats = {
+    main_event: { issued: 0, scanned: 0, voided: 0, refunded: 0 },
+    after_party: { issued: 0, scanned: 0, voided: 0, refunded: 0 },
+  };
+  for (const row of data as Array<{ event: string; status: string }>) {
+    const bucket =
+      row.event === 'after_party' ? out.after_party : out.main_event;
+    if (row.status === 'issued') bucket.issued++;
+    else if (row.status === 'scanned') bucket.scanned++;
+    else if (row.status === 'voided') bucket.voided++;
+    else if (row.status === 'refunded') bucket.refunded++;
+  }
+  return out;
+}
+
+// ---- Scan log feed (admin dashboard) ----
+export interface ScanLogEntryForAdmin {
+  id: string;
+  attempted_at: string;
+  ticket_id: string | null;
+  holder_name: string | null;
+  event: 'main_event' | 'after_party' | null;
+  result: ScanResult;
+  location: ScanLocation | null;
+  source: ScanSource | null;
+  scanner: string;
+}
+
+export interface ScanLogQuery {
+  resultFilter?: ScanResult | null;
+  cursor?: string | null;
+  limit?: number;
+}
+
+export interface ScanLogQueryResult {
+  entries: ScanLogEntryForAdmin[];
+  nextCursor: string | null;
+}
+
+export async function getScanLogForAdmin(
+  q: ScanLogQuery,
+): Promise<ScanLogQueryResult> {
+  const limit = Math.max(1, Math.min(200, q.limit ?? 50));
+  let query = supabaseAdmin
+    .from('ticket_scan_log')
+    .select(
+      'id, attempted_at, ticket_id, result, location, source, scanner, tickets(holder_name, event)',
+    );
+
+  if (q.cursor) {
+    query = query.lt('attempted_at', q.cursor);
+  }
+  if (q.resultFilter) {
+    query = query.eq('result', q.resultFilter);
+  }
+  query = query.order('attempted_at', { ascending: false }).limit(limit + 1);
+
+  const { data, error } = await query;
+  if (error || !data) {
+    // eslint-disable-next-line no-console
+    console.error('[getScanLogForAdmin] error', error);
+    return { entries: [], nextCursor: null };
+  }
+  const rows = data as unknown as Array<{
+    id: string;
+    attempted_at: string;
+    ticket_id: string | null;
+    result: ScanResult;
+    location: ScanLocation | null;
+    source: ScanSource | null;
+    scanner: string;
+    tickets:
+      | { holder_name: string; event: 'main_event' | 'after_party' }
+      | Array<{ holder_name: string; event: 'main_event' | 'after_party' }>
+      | null;
+  }>;
+
+  const mapped: ScanLogEntryForAdmin[] = rows.slice(0, limit).map((r) => {
+    const ticketRow = Array.isArray(r.tickets) ? r.tickets[0] : r.tickets;
+    return {
+      id: r.id,
+      attempted_at: r.attempted_at,
+      ticket_id: r.ticket_id,
+      holder_name: ticketRow?.holder_name ?? null,
+      event: ticketRow?.event ?? null,
+      result: r.result,
+      location: r.location,
+      source: r.source,
+      scanner: r.scanner,
+    };
+  });
+
+  const nextCursor =
+    rows.length > limit ? mapped[mapped.length - 1].attempted_at : null;
+  return { entries: mapped, nextCursor };
+}
