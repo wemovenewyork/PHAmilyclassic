@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Oswald, Barlow, Barlow_Condensed } from 'next/font/google';
 import './globals.css';
 import SiteFooter from '@/components/SiteFooter';
+import { Analytics } from '@vercel/analytics/next';
 
 // next/font/google self-hosts font files in the build output, eliminating
 // layout shift and 3rd-party font requests. On Vercel this works automatically.
@@ -65,6 +66,7 @@ export default function RootLayout({
       <body>
         {children}
         <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );
