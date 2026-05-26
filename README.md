@@ -97,7 +97,7 @@ phamilyclassic/
 | `SHOPIFY_ADMIN_API_TOKEN` | 5 | Custom-app token, `write_draft_orders` scope (Dev Dashboard client-credentials grant). Required only for custom-amount donations. |
 | `ADMIN_PASSWORD` | 4 | For `/admin` access (Session 4) |
 | `RESEND_API_KEY` | 4 | For ticket emails (Session 4) |
-| `RESEND_FROM_EMAIL` | 4 | `info@phafamilyclassic.com` |
+| `RESEND_FROM_EMAIL` | 4 | `info@theinterstatephamilyclassic.org` |
 
 ## Webhook security model
 
