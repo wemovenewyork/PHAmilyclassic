@@ -94,8 +94,9 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 /* ===== NAV ===== */
 .nav{position:fixed;top:0;left:0;width:100%;z-index:1000;padding:0 40px;height:70px;display:flex;align-items:center;justify-content:space-between;transition:background .4s,box-shadow .4s;}
 .nav.scrolled{background:rgba(10,22,40,.97);box-shadow:0 2px 30px rgba(0,0,0,.5);backdrop-filter:blur(10px);}
-.nav-brand{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);}
+.nav-brand{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.1rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);white-space:nowrap;flex-shrink:0;}
 .nav-brand span{color:var(--white);font-weight:400;}
+@media(max-width:1420px){.nav-brand span{display:none;}}
 .nav-links{display:flex;gap:28px;align-items:center;}
 .nav-links a{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.9rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--light-gray);transition:color .3s;}
 .nav-links a:hover{color:var(--gold);}
@@ -398,9 +399,11 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .reveal.visible{opacity:1;transform:translateY(0);}
 
 /* ===== RESPONSIVE ===== */
-@media(max-width:900px){
+@media(max-width:1300px){
   .nav-links{display:none;}
   .hamburger{display:flex;}
+}
+@media(max-width:900px){
   .section{padding:70px 24px;}
   .about-grid,.contact-grid{grid-template-columns:1fr;gap:40px;}
   .hero{padding:80px 20px 40px;}
