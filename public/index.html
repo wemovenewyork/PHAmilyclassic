@@ -304,14 +304,6 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 /* ===== VENDOR FORM ===== */
 .vendor-app{background:var(--navy);position:relative;}
 .vendor-app-inner{max-width:700px;margin:0 auto;}
-.vendor-form{display:flex;flex-direction:column;gap:16px;margin-top:32px;}
-.vendor-form input,.vendor-form textarea,.vendor-form select{padding:14px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--white);font-size:.95rem;outline:none;transition:border-color .3s;}
-.vendor-form input:focus,.vendor-form textarea:focus,.vendor-form select:focus{border-color:var(--gold);}
-.vendor-form textarea{resize:vertical;min-height:100px;}
-.vendor-form select{appearance:none;cursor:pointer;}
-.vendor-form select option{background:var(--deep-blue);color:var(--white);}
-.vendor-form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.vendor-msg{font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--gold);margin-top:8px;min-height:24px;}
 
 /* ===== NEWSLETTER ===== */
 .newsletter{background:var(--deep-blue);position:relative;text-align:center;}
@@ -329,14 +321,11 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .contact-item-text{font-family:'Barlow',sans-serif;font-size:.95rem;color:var(--gray);line-height:1.6;}
 .contact-item-text strong{color:var(--white);display:block;font-weight:600;margin-bottom:2px;}
 .contact-item-text a{color:var(--gold);text-decoration:underline;}
-.contact-form{display:flex;flex-direction:column;gap:16px;}
-.contact-form input,.contact-form textarea,.contact-form select{padding:14px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--white);font-size:.95rem;outline:none;transition:border-color .3s;}
-.contact-form input:focus,.contact-form textarea:focus,.contact-form select:focus{border-color:var(--gold);}
-.contact-form textarea{resize:vertical;min-height:120px;}
-.contact-form select{appearance:none;cursor:pointer;}
-.contact-form select option{background:var(--deep-blue);color:var(--white);}
-.contact-form button{align-self:flex-start;}
-.contact-success{font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--gold);margin-top:8px;min-height:24px;}
+.contact-cta-card{padding:32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:8px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;}
+.contact-cta-label{font-family:'Barlow Condensed',sans-serif;font-weight:500;font-size:.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;}
+.contact-cta-title{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--white);margin-bottom:10px;}
+.contact-cta-desc{font-family:'Barlow',sans-serif;font-size:.95rem;color:var(--gray);line-height:1.6;margin-bottom:20px;}
+.contact-cta-card .newsletter-cta{margin-top:0;}
 
 /* ===== VENUE ===== */
 .venue{background:var(--deep-blue);position:relative;}
@@ -408,7 +397,6 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   .venue-map{height:280px;}
   .tickets-box{padding:40px 24px;}
   .footer-grid{grid-template-columns:1fr 1fr;gap:30px;}
-  .vendor-form-row{grid-template-columns:1fr;}
   .cookie-banner{flex-direction:column;text-align:center;padding:18px 24px;}
 }
 @media(max-width:600px){
@@ -428,7 +416,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 @media print{
   *{color:#000!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important;}
   body{font-size:12pt;line-height:1.5;}
-  .nav,.hamburger,.mobile-menu,.ticker,.hero-grid,.hero::before,.cookie-banner,.newsletter,.contact-form,.btn-primary,.btn-secondary,.hero-actions,.countdown,.venue-map{display:none!important;}
+  .nav,.hamburger,.mobile-menu,.ticker,.hero-grid,.hero::before,.cookie-banner,.newsletter,.contact-cta-card,.btn-primary,.btn-secondary,.hero-actions,.countdown,.venue-map{display:none!important;}
   .hero{min-height:auto;padding:20px;}
   .hero-logo{width:150px;}
   .section{padding:20px 0;page-break-inside:avoid;}
@@ -1066,31 +1054,10 @@ if (supabase) {
   <div class="vendor-app-inner">
     <div class="reveal" style="text-align:center;">
       <div class="section-label">Vendors & Artisans</div>
-      <h2 class="section-title" id="vendor-title">Vendor Application</h2>
-      <p class="section-desc" style="margin:0 auto;">Interested in having a booth at the PHAmily Classic? Fill out the application below and our team will be in touch.</p>
+      <h2 class="section-title" id="vendor-title">Become a Vendor</h2>
+      <p class="section-desc" style="margin:0 auto;">Reserve your booth at the inaugural PHAmily Classic. See pricing, remaining spots, and complete your registration on our vendor page.</p>
+      <a class="newsletter-cta" href="/vendor">View Vendor Packages →</a>
     </div>
-    <form class="vendor-form reveal" id="vendorForm" onsubmit="submitVendor(); return false;">
-      <div class="vendor-form-row">
-        <input type="text" id="vName" placeholder="Business / Vendor Name" required>
-        <input type="text" id="vContact" placeholder="Contact Person" required>
-      </div>
-      <div class="vendor-form-row">
-        <input type="email" id="vEmail" placeholder="Email Address" required>
-        <input type="tel" id="vPhone" placeholder="Phone Number">
-      </div>
-      <select id="vType">
-        <option value="" disabled selected>Type of Vendor...</option>
-        <option value="food">Food & Beverage</option>
-        <option value="apparel">Apparel & Custom Goods</option>
-        <option value="masonic">Masonic Regalia & Supplies</option>
-        <option value="health">Health & Wellness</option>
-        <option value="community">Community Organization / Nonprofit</option>
-        <option value="other">Other</option>
-      </select>
-      <textarea id="vDesc" placeholder="Briefly describe your products or services..."></textarea>
-      <button type="submit" class="btn-primary" style="padding:14px 36px;font-size:1rem;align-self:flex-start;">Submit Application</button>
-      <div class="vendor-msg" id="vendorMsg"></div>
-    </form>
   </div>
 </section>
 
@@ -1118,23 +1085,12 @@ if (supabase) {
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="contact-item-text"><strong>Event Location</strong>Riverbank State Park<br>679 Riverside Dr, New York, NY 10031</div></div>
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg><div class="contact-item-text"><strong>Presented By</strong>Adelphic Union Lodge #14<br>Most Worshipful Prince Hall Grand Lodge, State of New York</div></div>
       </div>
-      <form class="contact-form reveal" id="contactForm" aria-label="Contact form" onsubmit="submitContact(); return false;">
-        <input type="text" id="cName" placeholder="Full Name" required aria-label="Full name">
-        <input type="email" id="cEmail" placeholder="Email Address" required aria-label="Email address">
-        <select id="cSubject" aria-label="Subject">
-          <option value="" disabled selected>Select a topic...</option>
-          <option value="general">General Inquiry</option>
-          <option value="tickets">Ticket Questions</option>
-          <option value="vendor">Vendor Application</option>
-          <option value="sponsor">Sponsorship Opportunities</option>
-          <option value="volunteer">Volunteer Sign-Up</option>
-          <option value="media">Press / Media</option>
-          <option value="accessibility">Accessibility Needs</option>
-        </select>
-        <textarea id="cMessage" placeholder="Your message..." aria-label="Message"></textarea>
-        <button type="submit" class="btn-primary" style="padding:14px 36px;font-size:1rem;">Send Message</button>
-        <div class="contact-success" id="contactMsg" aria-live="polite"></div>
-      </form>
+      <div class="contact-cta-card reveal">
+        <div class="contact-cta-label">Get in touch</div>
+        <h3 class="contact-cta-title">Have a question?</h3>
+        <p class="contact-cta-desc">Reach our team directly. We answer most messages within 48 hours.</p>
+        <a class="newsletter-cta" href="mailto:info@phamilyclassic.com">Email Us →</a>
+      </div>
     </div>
   </div>
 </section>
@@ -1227,36 +1183,6 @@ function toggleFaq(el){
   document.querySelectorAll('.faq-item.open').forEach(i=>{i.classList.remove('open');i.querySelector('.faq-question').setAttribute('aria-expanded','false');});
   if(!wasOpen){item.classList.add('open');el.setAttribute('aria-expanded','true');}
 }
-
-// Contact form
-function submitContact(){
-  const name=document.getElementById('cName').value.trim();
-  const email=document.getElementById('cEmail').value.trim();
-  const subject=document.getElementById('cSubject').value;
-  const message=document.getElementById('cMessage').value.trim();
-  const msg=document.getElementById('contactMsg');
-  if(!name||!email||!subject||!message){msg.textContent='Please fill in all fields.';msg.style.color='var(--red)';return;}
-  if(!email.includes('@')||!email.includes('.')){msg.textContent='Please enter a valid email address.';msg.style.color='var(--red)';return;}
-  msg.style.color='var(--gold)';msg.textContent='Message sent! We\'ll get back to you within 48 hours.';
-  document.getElementById('cName').value='';document.getElementById('cEmail').value='';document.getElementById('cSubject').selectedIndex=0;document.getElementById('cMessage').value='';
-}
-
-// Vendor form
-function submitVendor(){
-  const name=document.getElementById('vName').value.trim();
-  const contact=document.getElementById('vContact').value.trim();
-  const email=document.getElementById('vEmail').value.trim();
-  const type=document.getElementById('vType').value;
-  const desc=document.getElementById('vDesc').value.trim();
-  const msg=document.getElementById('vendorMsg');
-  if(!name||!contact||!email||!type||!desc){msg.textContent='Please fill in all required fields.';msg.style.color='var(--red)';return;}
-  if(!email.includes('@')||!email.includes('.')){msg.textContent='Please enter a valid email address.';msg.style.color='var(--red)';return;}
-  msg.style.color='var(--gold)';msg.textContent='Application received! Our vendor team will contact you within 5 business days.';
-  document.getElementById('vName').value='';document.getElementById('vContact').value='';document.getElementById('vEmail').value='';document.getElementById('vPhone').value='';document.getElementById('vType').selectedIndex=0;document.getElementById('vDesc').value='';
-}
-
-
-
 
 // Cookie Consent
 (function(){
