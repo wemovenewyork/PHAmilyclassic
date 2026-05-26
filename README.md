@@ -98,6 +98,7 @@ phamilyclassic/
 | `ADMIN_PASSWORD` | 4 | For `/admin` access (Session 4) |
 | `RESEND_API_KEY` | 4 | For ticket emails (Session 4) |
 | `RESEND_FROM_EMAIL` | 4 | `info@theinterstatephamilyclassic.org` |
+| `NEXT_PUBLIC_META_PIXEL_ID` | 5 | Meta Pixel ID for Facebook/Instagram ad conversion tracking. Safely no-ops if unset — the `<MetaPixel />` component renders nothing and helpers in `lib/meta-pixel.ts` skip the `fbq` call. Public by design (`NEXT_PUBLIC_` prefix). |
 
 ## Webhook security model
 
