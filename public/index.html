@@ -333,11 +333,6 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .contact-item-text{font-family:'Barlow',sans-serif;font-size:.95rem;color:var(--gray);line-height:1.6;}
 .contact-item-text strong{color:var(--white);display:block;font-weight:600;margin-bottom:2px;}
 .contact-item-text a{color:var(--gold);text-decoration:underline;}
-.social-links{display:flex;gap:14px;margin-top:12px;}
-.social-link{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);transition:all .3s;}
-.social-link:hover{background:var(--gold);border-color:var(--gold);}
-.social-link:hover svg{color:var(--navy);}
-.social-link svg{width:20px;height:20px;color:var(--light-gray);transition:color .3s;}
 .contact-form{display:flex;flex-direction:column;gap:16px;}
 .contact-form input,.contact-form textarea,.contact-form select{padding:14px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--white);font-size:.95rem;outline:none;transition:border-color .3s;}
 .contact-form input:focus,.contact-form textarea:focus,.contact-form select:focus{border-color:var(--gold);}
@@ -383,11 +378,6 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .footer-afterparty-icon{display:inline-block;height:1em;width:auto;vertical-align:middle;margin-right:6px;transform:translateY(-1px);}
 .footer-brand{font-family:'Oswald',sans-serif;font-weight:700;font-size:1.3rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
 .footer-brand-sub{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:16px;}
-.footer-social{display:flex;gap:10px;margin-top:16px;}
-.footer-social a{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid rgba(255,255,255,.1);transition:all .3s;}
-.footer-social a:hover{background:var(--gold);border-color:var(--gold);}
-.footer-social a:hover svg{color:var(--navy);}
-.footer-social svg{width:16px;height:16px;color:var(--gray);}
 .footer-bottom{max-width:1200px;margin:40px auto 0;padding-top:24px;border-top:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .footer-copy{font-family:'Barlow',sans-serif;font-size:.78rem;color:rgba(255,255,255,.3);}
 
@@ -443,7 +433,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 @media print{
   *{color:#000!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important;}
   body{font-size:12pt;line-height:1.5;}
-  .nav,.hamburger,.mobile-menu,.ticker,.hero-grid,.hero::before,.cookie-banner,.newsletter,.contact-form,.btn-primary,.btn-secondary,.social-links,.footer-social,.hero-actions,.countdown,.venue-map{display:none!important;}
+  .nav,.hamburger,.mobile-menu,.ticker,.hero-grid,.hero::before,.cookie-banner,.newsletter,.contact-form,.btn-primary,.btn-secondary,.hero-actions,.countdown,.venue-map{display:none!important;}
   .hero{min-height:auto;padding:20px;}
   .hero-logo{width:150px;}
   .section{padding:20px 0;page-break-inside:avoid;}
@@ -1136,16 +1126,6 @@ if (supabase) {
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg><div class="contact-item-text"><strong>Phone</strong>(212) PHAmily</div></div>
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="contact-item-text"><strong>Event Location</strong>Riverbank State Park<br>679 Riverside Dr, New York, NY 10031</div></div>
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg><div class="contact-item-text"><strong>Presented By</strong>Adelphic Union Lodge #14<br>Most Worshipful Prince Hall Grand Lodge, State of New York</div></div>
-        <div>
-          <div style="font-family:'Oswald',sans-serif;font-weight:600;font-size:.9rem;letter-spacing:2px;text-transform:uppercase;color:var(--white);margin-bottom:12px;">Follow Us</div>
-          <div class="social-links">
-            <a href="#" class="social-link" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
-            <a href="#" class="social-link" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></a>
-            <a href="#" class="social-link" aria-label="X formerly Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-            <a href="#" class="social-link" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-            <a href="#" class="social-link" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.46V12.5a8.27 8.27 0 004.77 1.52V10.6a4.83 4.83 0 01-.81.07 4.81 4.81 0 01-.38-3.98z"/></svg></a>
-          </div>
-        </div>
       </div>
       <div class="contact-form reveal" id="contactForm" role="form" aria-label="Contact form">
         <input type="text" id="cName" placeholder="Full Name" required aria-label="Full name">
@@ -1199,13 +1179,6 @@ if (supabase) {
       <div class="footer-brand">Interstate PHAmily Classic</div>
       <div class="footer-brand-sub">Presented by Adelphic Union Lodge #14</div>
       <p>A celebration of community, fellowship, and jurisdictional pride. Bringing together the NY and NJ Prince Hall Families at Riverbank State Park.</p>
-      <div class="footer-social">
-        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
-        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/></svg></a>
-        <a href="#" aria-label="X formerly Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-        <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
-        <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 0010.86 4.46V12.5a8.27 8.27 0 004.77 1.52V10.6a4.83 4.83 0 01-.81.07 4.81 4.81 0 01-.38-3.98z"/></svg></a>
-      </div>
     </div>
     <div class="footer-col"><h4>Quick Links</h4><a href="/register">Register to Play</a><a href="/teams">Rosters</a><a href="#about">About</a><a href="#schedule">Schedule</a><a href="#games">Games</a><a href="#community">Community</a><a href="/vendor">Vendor Opportunity</a><a href="https://whencecameyouniversity.com/collections/phamily-classic-merch" target="_blank" rel="noopener">Shop Merch</a><a href="#tickets">Tickets</a></div>
     <div class="footer-col"><h4>Information</h4><a href="#faq">FAQ</a><a href="#venue">Venue & Parking</a><a href="#afterparty"><img src="/after-party-logo.png" alt="" class="footer-afterparty-icon" loading="lazy" decoding="async" aria-hidden="true" />After Party</a><a href="#vendor">Vendor Application</a><a href="#contact">Contact Us</a><a href="#newsletter">Newsletter</a></div>
