@@ -317,12 +317,8 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
 .newsletter{background:var(--deep-blue);position:relative;text-align:center;}
 .newsletter::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(30,58,110,.4),transparent 60%);}
 .newsletter-inner{position:relative;z-index:2;max-width:600px;margin:0 auto;}
-.newsletter-form{display:flex;gap:0;margin-top:28px;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.1);}
-.newsletter-form input{flex:1;padding:16px 20px;background:rgba(255,255,255,.05);border:none;color:var(--white);font-size:1rem;outline:none;}
-.newsletter-form input::placeholder{color:var(--gray);}
-.newsletter-form button{padding:16px 32px;background:var(--red);color:var(--white);font-family:'Oswald',sans-serif;font-weight:600;font-size:.95rem;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;transition:background .3s;}
-.newsletter-form button:hover{background:var(--dark-red);}
-.newsletter-msg{font-family:'Barlow',sans-serif;font-size:.9rem;color:var(--gold);margin-top:12px;min-height:24px;}
+.newsletter-cta{display:inline-block;margin-top:28px;padding:16px 32px;background:var(--red);color:var(--white);font-family:'Oswald',sans-serif;font-weight:600;font-size:.95rem;letter-spacing:2px;text-transform:uppercase;border-radius:6px;text-decoration:none;transition:background .3s,transform .2s;}
+.newsletter-cta:hover{background:var(--dark-red);transform:translateY(-1px);}
 
 /* ===== CONTACT ===== */
 .contact{background:var(--navy);position:relative;}
@@ -423,8 +419,7 @@ button:focus-visible,a:focus-visible,.faq-question:focus-visible{outline:2px sol
   .tickets-price{font-size:3.5rem;}
   .countdown{gap:10px;}
   .countdown-num{font-size:1.8rem;padding:8px 10px;}
-  .newsletter-form{flex-direction:column;}
-  .newsletter-form button{width:100%;}
+  .newsletter-cta{display:block;text-align:center;}
   .footer-grid{grid-template-columns:1fr;}
   .testimonials-grid{grid-template-columns:1fr;}
 }
@@ -1105,11 +1100,7 @@ if (supabase) {
     <div class="section-label">Stay Updated</div>
     <h2 class="section-title" id="newsletter-title">Join the PHAmily Mailing List</h2>
     <p class="section-desc" style="margin:0 auto;">Be the first to get event updates, lineup announcements, vendor info, and exclusive offers delivered to your inbox.</p>
-    <form class="newsletter-form" id="newsletterForm" aria-label="Newsletter signup" onsubmit="submitNewsletter(); return false;">
-      <input type="email" id="newsletterEmail" placeholder="Enter your email address" required aria-label="Email address">
-      <button type="submit">Subscribe</button>
-    </form>
-    <div class="newsletter-msg" id="newsletterMsg" aria-live="polite"></div>
+    <a class="newsletter-cta" href="https://whencecameyouniversity.com/#contact_form" target="_blank" rel="noopener">Subscribe on Our Store →</a>
   </div>
 </section>
 
@@ -1235,15 +1226,6 @@ function toggleFaq(el){
   const wasOpen=item.classList.contains('open');
   document.querySelectorAll('.faq-item.open').forEach(i=>{i.classList.remove('open');i.querySelector('.faq-question').setAttribute('aria-expanded','false');});
   if(!wasOpen){item.classList.add('open');el.setAttribute('aria-expanded','true');}
-}
-
-// Newsletter
-function submitNewsletter(){
-  const email=document.getElementById('newsletterEmail').value.trim();
-  const msg=document.getElementById('newsletterMsg');
-  if(!email||!email.includes('@')||!email.includes('.')){msg.textContent='Please enter a valid email address.';msg.style.color='var(--red)';return;}
-  msg.style.color='var(--gold)';msg.textContent='You\'re on the list! Check your inbox for a confirmation.';
-  document.getElementById('newsletterEmail').value='';
 }
 
 // Contact form
