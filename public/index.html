@@ -1074,7 +1074,7 @@ if (supabase) {
       <h2 class="section-title" id="vendor-title">Vendor Application</h2>
       <p class="section-desc" style="margin:0 auto;">Interested in having a booth at the PHAmily Classic? Fill out the application below and our team will be in touch.</p>
     </div>
-    <div class="vendor-form reveal" id="vendorForm">
+    <form class="vendor-form reveal" id="vendorForm" onsubmit="submitVendor(); return false;">
       <div class="vendor-form-row">
         <input type="text" id="vName" placeholder="Business / Vendor Name" required>
         <input type="text" id="vContact" placeholder="Contact Person" required>
@@ -1093,9 +1093,9 @@ if (supabase) {
         <option value="other">Other</option>
       </select>
       <textarea id="vDesc" placeholder="Briefly describe your products or services..."></textarea>
-      <button type="button" class="btn-primary" onclick="submitVendor()" style="padding:14px 36px;font-size:1rem;align-self:flex-start;">Submit Application</button>
+      <button type="submit" class="btn-primary" style="padding:14px 36px;font-size:1rem;align-self:flex-start;">Submit Application</button>
       <div class="vendor-msg" id="vendorMsg"></div>
-    </div>
+    </form>
   </div>
 </section>
 
@@ -1105,10 +1105,10 @@ if (supabase) {
     <div class="section-label">Stay Updated</div>
     <h2 class="section-title" id="newsletter-title">Join the PHAmily Mailing List</h2>
     <p class="section-desc" style="margin:0 auto;">Be the first to get event updates, lineup announcements, vendor info, and exclusive offers delivered to your inbox.</p>
-    <div class="newsletter-form" id="newsletterForm" role="form" aria-label="Newsletter signup">
+    <form class="newsletter-form" id="newsletterForm" aria-label="Newsletter signup" onsubmit="submitNewsletter(); return false;">
       <input type="email" id="newsletterEmail" placeholder="Enter your email address" required aria-label="Email address">
-      <button type="button" onclick="submitNewsletter()">Subscribe</button>
-    </div>
+      <button type="submit">Subscribe</button>
+    </form>
     <div class="newsletter-msg" id="newsletterMsg" aria-live="polite"></div>
   </div>
 </section>
@@ -1127,7 +1127,7 @@ if (supabase) {
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><div class="contact-item-text"><strong>Event Location</strong>Riverbank State Park<br>679 Riverside Dr, New York, NY 10031</div></div>
         <div class="contact-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg><div class="contact-item-text"><strong>Presented By</strong>Adelphic Union Lodge #14<br>Most Worshipful Prince Hall Grand Lodge, State of New York</div></div>
       </div>
-      <div class="contact-form reveal" id="contactForm" role="form" aria-label="Contact form">
+      <form class="contact-form reveal" id="contactForm" aria-label="Contact form" onsubmit="submitContact(); return false;">
         <input type="text" id="cName" placeholder="Full Name" required aria-label="Full name">
         <input type="email" id="cEmail" placeholder="Email Address" required aria-label="Email address">
         <select id="cSubject" aria-label="Subject">
@@ -1141,9 +1141,9 @@ if (supabase) {
           <option value="accessibility">Accessibility Needs</option>
         </select>
         <textarea id="cMessage" placeholder="Your message..." aria-label="Message"></textarea>
-        <button type="button" class="btn-primary" onclick="submitContact()" style="padding:14px 36px;font-size:1rem;">Send Message</button>
+        <button type="submit" class="btn-primary" style="padding:14px 36px;font-size:1rem;">Send Message</button>
         <div class="contact-success" id="contactMsg" aria-live="polite"></div>
-      </div>
+      </form>
     </div>
   </div>
 </section>
