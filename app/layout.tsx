@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   },
   description:
     'The 1st Annual Interstate PHAmily Classic — NY vs NJ Basketball & Kickball. August 29, 2026 at Riverbank State Park, NYC. Presented by Adelphic Union Lodge #14.',
-  metadataBase: new URL('https://phafamilyclassic.com'),
+  metadataBase: new URL('https://theinterstatephamilyclassic.org'),
   openGraph: {
     title: 'Interstate PHAmily Classic | August 29, 2026',
     description:
